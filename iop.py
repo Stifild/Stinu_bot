@@ -39,7 +39,7 @@ class IOP:
         self.db[str(id)] = {
             "limit": 500,
             "ban": False,
-            "voice": "kirill",
+            "voice": "zahar",
             "emotion": "neutral",
             "speed": 1,
         }
