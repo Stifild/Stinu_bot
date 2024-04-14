@@ -65,9 +65,9 @@ def tts(message):
 @bot.message_handler(commands="menu")
 def menu(call):
     message: telebot.types.Message = (
-        call.message
-        if call.message
-        else call.callback_query.message if call.callback_query.message else call
+        call.message_id
+        if call.message_id
+        else call.callback_query.message_id if call.callback_query.message_id else call
     )
     bot.send_message(
         message.chat.id,
