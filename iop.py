@@ -5,8 +5,8 @@ from config import (
     FOLDER_ID,
     TELEGRAM_TOKEN,
     IAM_TOKEN_PATH,
-    VJOSN_PATH,
-)
+    VJSON_PATH)
+
 
 os.mkdir("./data/temp")
 
@@ -105,10 +105,10 @@ class IOP:
             return None
 
     def tuple_voices(self) -> tuple[str]:
-        return tuple(self.read_json(VJOSN_PATH).keys())
+        return tuple(self.read_json(VJSON_PATH).keys())
 
     def tuple_emotions(self, id: int) -> tuple[str]:
-        return tuple(self.read_json(VJOSN_PATH)[self.db[str(id)]["voice"]])
+        return tuple(self.read_json(VJSON_PATH)[self.db[str(id)]["voice"]])
 
 
 class SpeechKit:
