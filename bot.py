@@ -207,4 +207,4 @@ def select_speed(message):
         bot.register_next_step_handler(message, select_speed)
 
 
-bot.polling()
+bot.infinity_polling()
