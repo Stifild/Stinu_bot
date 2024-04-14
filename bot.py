@@ -34,11 +34,11 @@ def help(message):
 
 
 @bot.message_handler(commands=["tts"])
-def tts(message):
+def tts(message: telebot.types.Message):
     result: bool | tuple[bool, str] = io.tts(message)
     if result is not tuple:
         bot.send_message(message.chat.id, "Лови результат:")
-        with open(f"./data/temp/{str(id)}.ogg", "rb") as file:
+        with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
             bot.send_voice(
                 message.chat.id,
                 file,
