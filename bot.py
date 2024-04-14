@@ -1,6 +1,7 @@
 import telebot, logging, iop, json
 from config import LOGS_PATH, TELEGRAM_TOKEN
 from iop import IOP
+from telebot.types import ReplyKeyboardRemove as rm
 
 io = IOP()
 
@@ -102,7 +103,7 @@ def choose_voice(call):
 def select_voice(message):
     if message.text in io.tuple_voices():
         io.db[str(message.from_user.id)]["voice"] = message.text
-        bot.send_message(message.chat.id, f'Теперь используется голос "{message.text}"')
+        bot.send_message(message.chat.id, f'Теперь используется голос "{message.text}"', reply_markup=rm)
         bot.send_message(
             message.chat.id,
             "Меню:",
@@ -141,7 +142,7 @@ def select_emotion(message):
     if message.text in io.tuple_emotions(message.from_user.id):
         io.db[str(message.from_user.id)]["emotion"] = message.text
         bot.send_message(
-            message.chat.id, f'Теперь используется эмоция "{message.text}"'
+            message.chat.id, f'Теперь используется эмоция "{message.text}"', reply_markup=rm
         )
         bot.send_message(
             message.chat.id,
