@@ -13,17 +13,12 @@ bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
 
 @bot.message_handler(commands=["start"])
-def start(message):
+def start(message: telebot.types.Message):
     bot.send_message(
         message.chat.id,
         "Привет! Я бот для работы с SpeachKit. Напиши /help для подробностей",
     )
-    io.db[str(id)] = {
-            "limit": 500,
-            "ban": False,
-            "voice": None,
-        }
-    io.write_json(io.db)
+    io.sing_up(message.from_user.id)
 
 
 @bot.message_handler(commands=["help"])
