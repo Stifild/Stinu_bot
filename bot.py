@@ -62,24 +62,27 @@ def tts(message):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "menu")
-@bot.message_handler(commands="menu")
+@bot.message_handler(commands=["menu"])
 def menu(call):
     message: telebot.types.Message = (
-        call.message_id
-        if call.message_id
-        else call.callback_query.message_id if call.callback_query.message_id else call
+        call.message
+        if hasattr(call, 'message')
+        else call.callback_query.message if hasattr(call.callback_query, 'message') else None
     )
-    bot.send_message(
-        message.chat.id,
-        "Меню:",
-        inline_keyboard=io.get_inline_keyboard(
-            (
-                ("Выбрать голос", "voice"),
-                ("Выбрать эмоцию", "emotion"),
-                ("Выбрать скорость", "speed"),
-            )
-        ),
-    )
+    if message is not None:
+        bot.send_message(
+            message.chat.id,
+            "Меню:",
+            inline_keyboard=io.get_inline_keyboard(
+                (
+                    ("Выбрать голос", "voice"),
+                    ("Выбрать эмоцию", "emotion"),
+                    ("Выбрать скорость", "speed"),
+                )
+            ),
+        )
+    else:
+        logging.error("Message is None")
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
