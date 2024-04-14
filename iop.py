@@ -5,7 +5,8 @@ from config import (
     FOLDER_ID,
     IAM_TOKEN_PATH,
     VJSON_PATH,
-    IAM_TOKEN_ENDPOINT)
+    IAM_TOKEN_ENDPOINT,
+)
 
 
 os.mkdir("./data/temp") if not os.path.exists("./data/temp") else None
@@ -79,7 +80,7 @@ class IOP:
             token_data = json.load(token_file)
 
         return token_data.get("access_token")
-    
+
     @classmethod
     def create_new_iam_token(cls):
         headers = {"Metadata-Flavor": "Google"}
@@ -95,7 +96,7 @@ class IOP:
             if response.status_code == 200:
                 token_data = {
                     "access_token": response.json().get("access_token"),
-                    "expires_at": response.json().get("expires_in") + time.time()
+                    "expires_at": response.json().get("expires_in") + time.time(),
                 }
 
                 with open(IAM_TOKEN_PATH, "w") as token_file:

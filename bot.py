@@ -1,6 +1,7 @@
 import telebot, logging, iop, json
 from config import LOGS_PATH, TELEGRAM_TOKEN
 from iop import IOP
+
 io = IOP()
 
 logging.basicConfig(
@@ -64,7 +65,9 @@ def tts(message):
 @bot.message_handler(commands="menu")
 def menu(call):
     message: telebot.types.Message = (
-        call.message if call.message else call.callback_query.message if call.callback_query.message else call
+        call.message
+        if call.message
+        else call.callback_query.message if call.callback_query.message else call
     )
     bot.send_message(
         message.chat.id,
@@ -187,5 +190,6 @@ def select_speed(message):
     else:
         bot.send_message(message.chat.id, "Неверный выбор. Попробуй ещё раз.")
         bot.register_next_step_handler(message, select_speed)
-    
+
+
 bot.polling()
