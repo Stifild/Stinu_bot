@@ -39,7 +39,9 @@ class IOP:
         self.db[str(id)] = {
             "limit": 500,
             "ban": False,
-            "voice": None,
+            "voice": "kirill",
+            "emotion": "neutral",
+            "speed": 1
         }
         self.write_json(self.db)
 
