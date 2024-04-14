@@ -133,7 +133,8 @@ class IOP:
         return tuple(self.read_json(VJSON_PATH).keys())
 
     def tuple_emotions(self, id: int) -> tuple[str]:
-        return tuple(self.read_json(VJSON_PATH)[self.db[str(id)]["voice"]])
+        voice = self.db[str(id)]["voice"]
+        return tuple(self.read_json(VJSON_PATH)[voice])
 
 
 class SpeechKit:
@@ -142,7 +143,7 @@ class SpeechKit:
         iam_token = IOP.get_iam_token()
         folder_id = FOLDER_ID
         voice = str(IOP.db[id]["voice"])
-        emotion = str(IOP.db[id]["emotion"])
+        emotion = str(IOP.db[id]["emotion"]) if not None else ""
         speed = str(IOP.db[id]["speed"])
 
         headers = {
