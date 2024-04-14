@@ -119,7 +119,7 @@ class IOP:
         return markup
 
     def get_reply_markup(
-        self, values: tuple[str]
+        self, values: list[str]
     ) -> telebot.types.ReplyKeyboardMarkup | None:
         if values:
             markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -134,7 +134,7 @@ class IOP:
 
     def tuple_emotions(self, id: int) -> tuple[str]:
         voice = self.db[str(id)]["voice"]
-        return tuple(self.read_json(VJSON_PATH)[voice])
+        return self.read_json(VJSON_PATH)[voice]
 
 
 class SpeechKit:
