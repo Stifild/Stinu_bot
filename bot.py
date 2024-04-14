@@ -59,7 +59,6 @@ def tts(message):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "menu")
-@bot.message_handler(commands=["menu"])
 def menu(call):
     message: telebot.types.Message = (
         call.message if call.message else call.callback_query.message
