@@ -41,7 +41,7 @@ class IOP:
             "ban": False,
             "voice": "kirill",
             "emotion": "neutral",
-            "speed": 1
+            "speed": 1,
         }
         self.write_json(self.db)
 

@@ -38,13 +38,14 @@ def tts(message):
     result: bool | tuple[bool, str] = io.tts(message)
     if result is not tuple:
         bot.send_message(message.chat.id, "Лови результат:")
-        bot.send_voice(
-            message.chat.id,
-            f"./data/temp/{message.from_user.id}.mp3",
-            reply_markup=telebot.util.quick_markup(
-                {"Меню": {"callback_data": "menu"}}
-            ),
-        )
+        with open(f"./data/temp/{str(id)}.ogg", "rb") as file:
+            bot.send_voice(
+                message.chat.id,
+                file,
+                reply_markup=telebot.util.quick_markup(
+                    {"Меню": {"callback_data": "menu"}}
+                ),
+            )
     else:
         bot.send_message(
             message.chat.id,
@@ -70,7 +71,7 @@ def menu(call):
         call.message
         if hasattr(call, "message")
         else call.message if isinstance(call, telebot.types.CallbackQuery) else call
-    ) 
+    )
     bot.send_message(message.chat.id, "Under constraction")
     """
     if message is not None:
@@ -89,6 +90,7 @@ def menu(call):
         logging.error("Message is None")
  """
 
+
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
 def choose_voice(call):
     message: telebot.types.Message = (
@@ -106,7 +108,11 @@ def choose_voice(call):
 def select_voice(message):
     if message.text in io.list_voices():
         io.db[str(message.from_user.id)]["voice"] = message.text
-        bot.send_message(message.chat.id, f'Теперь используется голос "{message.text}"', reply_markup=rm)
+        bot.send_message(
+            message.chat.id,
+            f'Теперь используется голос "{message.text}"',
+            reply_markup=rm,
+        )
         bot.send_message(
             message.chat.id,
             "Меню:",
@@ -145,7 +151,9 @@ def select_emotion(message):
     if message.text in io.list_emotions(message.from_user.id):
         io.db[str(message.from_user.id)]["emotion"] = message.text
         bot.send_message(
-            message.chat.id, f'Теперь используется эмоция "{message.text}"', reply_markup=rm
+            message.chat.id,
+            f'Теперь используется эмоция "{message.text}"',
+            reply_markup=rm,
         )
         bot.send_message(
             message.chat.id,
