@@ -3,9 +3,9 @@ from config import (
     LOGS_PATH,
     JSON_PATH,
     FOLDER_ID,
-    TELEGRAM_TOKEN,
     IAM_TOKEN_PATH,
-    VJSON_PATH)
+    VJSON_PATH,
+    IAM_TOKEN_ENDPOINT)
 
 
 os.mkdir("./data/temp") if not os.path.exists("./data/temp") else None
@@ -79,6 +79,31 @@ class IOP:
             token_data = json.load(token_file)
 
         return token_data.get("access_token")
+    
+    @classmethod
+    def create_new_iam_token(cls):
+        headers = {"Metadata-Flavor": "Google"}
+
+        try:
+            response = requests.get(IAM_TOKEN_ENDPOINT, headers=headers)
+
+        except Exception as e:
+            logging.error("Не удалось выполнить запрос:", e)
+            logging.info("Токен не получен")
+
+        else:
+            if response.status_code == 200:
+                token_data = {
+                    "access_token": response.json().get("access_token"),
+                    "expires_at": response.json().get("expires_in") + time.time()
+                }
+
+                with open(IAM_TOKEN_PATH, "w") as token_file:
+                    json.dump(token_data, token_file)
+
+            else:
+                logging.error("Ошибка при получении ответа:", response.status_code)
+                logging.info("Токен не получен")
 
     def get_inline_keyboard(
         self, values: tuple[tuple[str, str]]
