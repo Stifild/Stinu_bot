@@ -39,7 +39,7 @@ def tts(message: telebot.types.Message):
     if result is not tuple:
         bot.send_message(message.chat.id, "Лови результат:")
         with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
-            bot.send_voice(
+            bot.send_audio(
                 message.chat.id,
                 file,
                 reply_markup=telebot.util.quick_markup(
