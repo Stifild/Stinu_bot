@@ -22,7 +22,6 @@ class IOP:
 
     def __init__(self):
         self.db = self.read_json()
-        self.bot_token = TELEGRAM_TOKEN
 
     def write_json(self, data: dict, path: str = JSON_PATH):
         with open(path, "w") as f:

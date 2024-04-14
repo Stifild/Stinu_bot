@@ -1,5 +1,5 @@
 import telebot, logging, iop, json
-from config import LOGS_PATH
+from config import LOGS_PATH, TELEGRAM_TOKEN
 from iop import IOP as io
 
 logging.basicConfig(
@@ -9,7 +9,7 @@ logging.basicConfig(
     filemode="w",
 )
 
-bot = telebot.TeleBot(io.bot_token)
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
 
 @bot.message_handler(commands=["start"])
