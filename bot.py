@@ -66,12 +66,13 @@ def tts(message):
 @bot.callback_query_handler(func=lambda call: call.data == "menu")
 @bot.message_handler(commands=["menu"])
 def menu(call):
-    
     message: telebot.types.Message = (
         call.message
         if hasattr(call, "message")
         else call.message if isinstance(call, telebot.types.CallbackQuery) else call
-    )
+    ) 
+    bot.send_message(message.chat.id, "Under constraction")
+    """
     if message is not None:
         bot.send_message(
             message.chat.id,
@@ -86,7 +87,7 @@ def menu(call):
         )
     else:
         logging.error("Message is None")
-
+ """
 
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
 def choose_voice(call):
