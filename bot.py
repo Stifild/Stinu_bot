@@ -39,7 +39,7 @@ def tts(message):
         bot.send_voice(
             message.chat.id,
             f"./data/temp/{message.from_user.id}.mp3",
-            inline_keyboard=telebot.util.quick_markup(
+            reply_markup=telebot.util.quick_markup(
                 {"Меню": {"callback_data": "menu"}}
             ),
         )
@@ -47,7 +47,7 @@ def tts(message):
         bot.send_message(
             message.chat.id,
             result[1],
-            inline_keyboard=(
+            reply_markup=(
                 telebot.util.quick_markup(
                     {
                         "Вики по кодам ошибок": {
@@ -73,7 +73,7 @@ def menu(call):
         bot.send_message(
             message.chat.id,
             "Меню:",
-            inline_keyboard=io.get_inline_keyboard(
+            reply_markup=io.get_inline_keyboard(
                 (
                     ("Выбрать голос", "voice"),
                     ("Выбрать эмоцию", "emotion"),
@@ -106,7 +106,7 @@ def select_voice(message):
         bot.send_message(
             message.chat.id,
             "Меню:",
-            inline_keyboard=io.get_inline_keyboard(
+            reply_markup=io.get_inline_keyboard(
                 (
                     ("Выбрать голос", "voice"),
                     ("Выбрать эмоцию", "emotion"),
@@ -146,7 +146,7 @@ def select_emotion(message):
         bot.send_message(
             message.chat.id,
             "Меню:",
-            inline_keyboard=io.get_inline_keyboard(
+            reply_markup=io.get_inline_keyboard(
                 (
                     ("Выбрать голос", "voice"),
                     ("Выбрать эмоцию", "emotion"),
@@ -182,7 +182,7 @@ def select_speed(message):
         bot.send_message(
             message.chat.id,
             "Меню:",
-            inline_keyboard=io.get_inline_keyboard(
+            reply_markup=io.get_inline_keyboard(
                 (
                     ("Выбрать голос", "voice"),
                     ("Выбрать эмоцию", "emotion"),
