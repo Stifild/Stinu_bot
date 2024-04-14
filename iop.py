@@ -20,9 +20,6 @@ logging.basicConfig(
 
 class IOP:
 
-    def __init__(self):
-        self.db = self.read_json()
-
     def write_json(self, data: dict, path: str = JSON_PATH):
         with open(path, "w") as f:
             json.dump(data, f, indent=4)
@@ -33,6 +30,8 @@ class IOP:
                 return json.load(f)
         except json.decoder.JSONDecodeError:
             return {}
+
+    db = read_json()
 
     def sing_up(self, id: int):
         self.db[str(id)] = {
