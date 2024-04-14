@@ -185,3 +185,5 @@ def select_speed(message):
     else:
         bot.send_message(message.chat.id, "Неверный выбор. Попробуй ещё раз.")
         bot.register_next_step_handler(message, select_speed)
+    
+bot.polling()
