@@ -65,9 +65,9 @@ def tts(message):
 @bot.message_handler(commands=["menu"])
 def menu(call):
     message: telebot.types.Message = (
-    call.message
-    if hasattr(call, 'message')
-    else call.message if isinstance(call, telebot.types.CallbackQuery) else call
+        call.message
+        if hasattr(call, "message")
+        else call.message if isinstance(call, telebot.types.CallbackQuery) else call
     )
     if message is not None:
         bot.send_message(
