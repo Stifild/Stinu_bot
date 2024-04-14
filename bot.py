@@ -95,13 +95,13 @@ def choose_voice(call):
     bot.send_message(
         message.chat.id,
         "Выбери голос:",
-        reply_markup=io.get_reply_markup(io.tuple_voices()),
+        reply_markup=io.get_reply_markup(io.list_voices()),
     )
     bot.register_next_step_handler(message, select_voice)
 
 
 def select_voice(message):
-    if message.text in io.tuple_voices():
+    if message.text in io.list_voices():
         io.db[str(message.from_user.id)]["voice"] = message.text
         bot.send_message(message.chat.id, f'Теперь используется голос "{message.text}"', reply_markup=rm)
         bot.send_message(
@@ -119,7 +119,7 @@ def select_voice(message):
         bot.send_message(
             message.chat.id,
             "Неверный выбор. Попробуй ещё раз.",
-            reply_markup=io.get_reply_markup(io.tuple_voices()),
+            reply_markup=io.get_reply_markup(io.list_voices()),
         )
         bot.register_next_step_handler(message, select_voice)
 
@@ -133,13 +133,13 @@ def choose_emotion(call):
     bot.send_message(
         message.chat.id,
         "Выбери эмоцию:",
-        reply_markup=io.get_reply_markup(io.tuple_emotions(message.from_user.id)),
+        reply_markup=io.get_reply_markup(io.list_emotions(message.from_user.id)),
     )
     bot.register_next_step_handler(message, select_emotion)
 
 
 def select_emotion(message):
-    if message.text in io.tuple_emotions(message.from_user.id):
+    if message.text in io.list_emotions(message.from_user.id):
         io.db[str(message.from_user.id)]["emotion"] = message.text
         bot.send_message(
             message.chat.id, f'Теперь используется эмоция "{message.text}"', reply_markup=rm
@@ -159,7 +159,7 @@ def select_emotion(message):
         bot.send_message(
             message.chat.id,
             "Неверный выбор. Попробуй ещё раз.",
-            reply_markup=io.get_reply_markup(io.tuple_emotions(message.from_user.id)),
+            reply_markup=io.get_reply_markup(io.list_emotions(message.from_user.id)),
         )
         bot.register_next_step_handler(message, select_emotion)
 

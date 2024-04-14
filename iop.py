@@ -129,10 +129,10 @@ class IOP:
         else:
             return None
 
-    def tuple_voices(self) -> tuple[str]:
-        return tuple(self.read_json(VJSON_PATH).keys())
+    def list_voices(self) -> tuple[str]:
+        return list(self.read_json(VJSON_PATH).keys())
 
-    def tuple_emotions(self, id: int) -> tuple[str]:
+    def list_emotions(self, id: int) -> tuple[str]:
         voice = self.db[str(id)]["voice"]
         return self.read_json(VJSON_PATH)[voice]
 
