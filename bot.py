@@ -1,6 +1,7 @@
 import telebot, logging, iop, json
 from config import LOGS_PATH, TELEGRAM_TOKEN
-from iop import IOP as io
+from iop import IOP
+io = IOP()
 
 logging.basicConfig(
     filename=LOGS_PATH,
