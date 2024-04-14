@@ -1,0 +1,17 @@
+{
+    "alena": ["neutral", "good"],
+    "filipp": null,
+    "ermil": ["neutral", "good"],
+    "jane": ["neutral", "good", "evil"],
+    "madirus": null,
+    "omazh": ["neutral", "evil"],
+    "zahar": ["neutral", "good"],
+    "dasha": ["neutral", "good", "friendly"],
+    "julia": ["neutral", "strict"],
+    "lera": ["neutral", "friendly"],
+    "masha": ["strict", "good", "friendly"],
+    "marina": ["neutral", "friendly", "whisper"],
+    "alexander": ["neutral", "good"],
+    "kirill": ["neutral", "good", "strict"],
+    "anton": ["neutral", "good"]    
+}
