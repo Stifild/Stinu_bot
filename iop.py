@@ -61,9 +61,9 @@ class IOP:
                 self.write_json(self.db)
                 return True
             else:
-                return False, result
+                return (False, result)
         else:
-            return False, "Текст должен быть от 1 до 250 символов"
+            return (False, "Текст должен быть от 1 до 250 символов")
 
     def get_iam_token(self) -> str:
         try:
