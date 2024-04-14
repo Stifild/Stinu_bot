@@ -8,7 +8,7 @@ from config import (
     VJSON_PATH)
 
 
-os.mkdir("./data/temp")
+os.mkdir("./data/temp") if not os.path.exists("./data/temp") else None
 
 logging.basicConfig(
     filename=LOGS_PATH,
