@@ -142,11 +142,12 @@ class IOP:
 class SpeechKit:
 
     def text_to_speech(text: str, id: str):
-        iam_token = IOP.get_iam_token()
+        io = IOP()
+        iam_token = io.get_iam_token()
         folder_id = FOLDER_ID
-        voice = str(IOP.db[id]["voice"])
-        emotion = str(IOP.db[id]["emotion"]) if not None else ""
-        speed = str(IOP.db[id]["speed"])
+        voice = str(io.db[id]["voice"])
+        emotion = str(io.db[id]["emotion"]) if not None else ""
+        speed = str(io.db[id]["speed"])
 
         headers = {
             "Authorization": f"Bearer {iam_token}",
