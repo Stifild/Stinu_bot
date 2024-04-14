@@ -18,6 +18,7 @@ def start(message):
         message.chat.id,
         "Привет! Я бот для работы с SpeachKit. Напиши /help для подробностей",
     )
+    io.sing_up(id=message.from_user.id)
 
 
 @bot.message_handler(commands=["help"])
