@@ -31,7 +31,7 @@ class IOP:
         try:
             with open(path, "r") as f:
                 return json.load(f)
-        except json.decoder.JSONDecodeError or FileNotFoundError:
+        except (json.decoder.JSONDecodeError, FileNotFoundError):
             return {}
 
     def sing_up(self, id: int):
