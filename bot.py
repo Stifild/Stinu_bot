@@ -18,7 +18,12 @@ def start(message):
         message.chat.id,
         "Привет! Я бот для работы с SpeachKit. Напиши /help для подробностей",
     )
-    io.sing_up(id=message.from_user.id)
+    io.db[str(id)] = {
+            "limit": 500,
+            "ban": False,
+            "voice": None,
+        }
+    io.write_json(io.db)
 
 
 @bot.message_handler(commands=["help"])
