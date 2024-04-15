@@ -127,6 +127,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+token_data.json
+users.json
 
 # Spyder project settings
 .spyderproject

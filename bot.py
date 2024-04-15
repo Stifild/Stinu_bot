@@ -22,7 +22,7 @@ def start(message: telebot.types.Message):
         message.chat.id,
         "Привет! Я бот для работы с SpeachKit. Напиши /help для подробностей",
     )
-    if str(message.from_user.id) not in io.db.keys:
+    if str(message.from_user.id) not in io.db.keys():
         io.sing_up(message.from_user.id)
 
 
