@@ -106,7 +106,7 @@ class IOP:
         text = telebot.util.extract_arguments(message.text)
         id = message.from_user.id
         if (
-            len(text) > 0
+            len(text) > 2
             and len(text) < 251
             and len(text) < int(self.db[str(id)]["limit"])
         ):
@@ -125,7 +125,7 @@ class IOP:
             logging.warning("Ошибка со стороны пользователя (IOP.tts)")
             return (
                 False,
-                f"Проблема с запросом. {'У вас закончился лимит' if len(text) < int(self.db[str(id)]['limit']) else 'Cлишком длинный текст'}",
+                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db[str(id)]['limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
             )
 
     def get_iam_token(self) -> str:
