@@ -1,5 +1,5 @@
 import telebot, logging, iop, json
-from config import LOGS_PATH, TELEGRAM_TOKEN
+from config import LOGS_PATH, TELEGRAM_TOKEN, ADMIN_LIST
 from iop import IOP
 from telebot.types import ReplyKeyboardRemove as rma
 
@@ -219,7 +219,9 @@ def select_speed(message):
         bot.register_next_step_handler(message, select_speed)
 
 @bot.message_handler(commands=['log'])
-def lo
+def logs(message: telebot.types.Message):
+    with open(LOGS_PATH, "rb") as file:
+        bot.send_document(message.chat.id, file) if message.from_user.id in ADMIN_LIST else None
 
 
 bot.infinity_polling()
