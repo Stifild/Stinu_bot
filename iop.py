@@ -116,11 +116,14 @@ class IOP:
                     f.write(result)
                 self.db[str(id)]["limit"] = int(self.db[str(id)]["limit"]) - len(text)
                 self.write_json(self.db)
+                logging.debug("Успешная генерация")
                 return True
             else:
+                logging.debug("Проблема с запросом")
                 return tuple(False, result)
         else:
-            return tuple(False, "Текст должен быть от 1 до 250 символов")
+            logging.debug("Ошибка со стороны пользователя")
+            return tuple(False, f"Проблема с запросом. {"У вас закончился лимит" if message else "Cлишком длинный текст"}")
 
     def get_iam_token(self) -> str:
         """
