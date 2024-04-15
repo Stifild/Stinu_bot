@@ -45,6 +45,7 @@ class IOP:
         list_voices() -> tuple[str]: Lists available voices.
         list_emotions(id: int) -> tuple[str]: Lists available emotions for a user.
     """
+
     def __init__(self):
         self.db = self.read_json()
 

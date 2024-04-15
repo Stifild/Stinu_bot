@@ -31,6 +31,15 @@ def help(message):
     bot.send_message(
         message.chat.id,
         "Список команд:\n/tts <текст> - озвучить текст\n/menu - показать меню",
+        reply_markup=(
+            telebot.util.quick_markup(
+                {
+                    "Язык разметки tts": {
+                        "url": "https://yandex.cloud/ru/docs/speechkit/tts/markup/tts-markup"
+                    }
+                }
+            )
+        ),
     )
 
 
