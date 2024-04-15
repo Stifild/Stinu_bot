@@ -13,7 +13,7 @@ os.mkdir("./data/temp") if not os.path.exists("./data/temp") else None
 
 logging.basicConfig(
     filename=LOGS_PATH,
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
     filemode="w",
 )
