@@ -46,7 +46,7 @@ def help(message):
 @bot.message_handler(commands=["tts"])
 def tts(message: telebot.types.Message):
     result: bool | tuple[bool, str] = io.tts(message)
-    if result is not tuple:
+    if result == True:
         print(result)
         bot.send_message(message.chat.id, "Лови результат:")
         with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
@@ -57,7 +57,7 @@ def tts(message: telebot.types.Message):
                     {"Меню": {"callback_data": "menu"}}
                 ),
             )
-    else:
+    elif not result[0]:
         print(result)
         bot.send_message(
             message.chat.id,
