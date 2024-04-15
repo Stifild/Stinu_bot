@@ -47,6 +47,7 @@ def help(message):
 def tts(message: telebot.types.Message):
     result: bool | tuple[bool, str] = io.tts(message)
     if result is not tuple:
+        print(result)
         bot.send_message(message.chat.id, "Лови результат:")
         with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
             bot.send_audio(
@@ -57,6 +58,7 @@ def tts(message: telebot.types.Message):
                 ),
             )
     else:
+        print(result)
         bot.send_message(
             message.chat.id,
             result[1],
