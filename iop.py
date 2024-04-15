@@ -13,7 +13,7 @@ os.mkdir("./data/temp") if not os.path.exists("./data/temp") else None
 
 logging.basicConfig(
     filename=LOGS_PATH,
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     filemode="w",
 )
@@ -116,13 +116,13 @@ class IOP:
                     f.write(result)
                 self.db[str(id)]["limit"] = int(self.db[str(id)]["limit"]) - len(text)
                 self.write_json(self.db)
-                logging.debug("Успешная генерация")
+                logging.info("Успешная генерация (IOP.tts)")
                 return True
             else:
-                logging.debug("Проблема с запросом")
+                logging.warning(f"Проблема с запросом (IOP.tts): {result}")
                 return tuple(False, result)
         else:
-            logging.debug("Ошибка со стороны пользователя")
+            logging.warning("Ошибка со стороны пользователя (IOP.tts)")
             return (
                 False,
                 f"Проблема с запросом. {'У вас закончился лимит' if len(text) < int(self.db[str(id)]['limit']) else 'Cлишком длинный текст'}",
