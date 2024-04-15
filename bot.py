@@ -63,15 +63,18 @@ def tts(message: telebot.types.Message):
             message.chat.id,
             result[1],
             reply_markup=(
-                telebot.util.quick_markup(
-                    {
-                        "Вики по кодам ошибок": {
-                            "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                (
+                    telebot.util.quick_markup(
+                        {
+                            "Вики по кодам ошибок": {
+                                "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                            },
+                            "Меню": {"callback_data": "menu"},
                         }
-                    }
-                )
-                if "кодом:" in result[1]
-                else None
+                    )
+                    if "кодом:" in result[1]
+                    else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
+                ),
             ),
         )
 

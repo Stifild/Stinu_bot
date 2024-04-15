@@ -123,7 +123,10 @@ class IOP:
                 return tuple(False, result)
         else:
             logging.debug("Ошибка со стороны пользователя")
-            return (False, f"Проблема с запросом. {'У вас закончился лимит' if len(text) < int(self.db[str(id)]['limit']) else 'Cлишком длинный текст'}")
+            return (
+                False,
+                f"Проблема с запросом. {'У вас закончился лимит' if len(text) < int(self.db[str(id)]['limit']) else 'Cлишком длинный текст'}",
+            )
 
     def get_iam_token(self) -> str:
         """
