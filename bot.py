@@ -218,10 +218,15 @@ def select_speed(message):
         bot.send_message(message.chat.id, "Неверный выбор. Попробуй ещё раз.")
         bot.register_next_step_handler(message, select_speed)
 
-@bot.message_handler(commands=['log'])
+
+@bot.message_handler(commands=["log"])
 def logs(message: telebot.types.Message):
     with open(LOGS_PATH, "rb") as file:
-        bot.send_document(message.chat.id, file) if message.from_user.id in ADMIN_LIST else None
+        (
+            bot.send_document(message.chat.id, file)
+            if message.from_user.id in ADMIN_LIST
+            else None
+        )
 
 
 bot.infinity_polling()
