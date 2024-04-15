@@ -1,4 +1,4 @@
-import telebot, logging, iop, json
+import telebot, logging, os
 from config import LOGS_PATH, TELEGRAM_TOKEN, ADMIN_LIST
 from iop import IOP
 from telebot.types import ReplyKeyboardRemove as rma
@@ -56,6 +56,7 @@ def tts(message: telebot.types.Message):
                     {"Меню": {"callback_data": "menu"}}
                 ),
             )
+        os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
     elif not result[0]:
         bot.send_message(
             message.chat.id,
