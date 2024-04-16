@@ -84,8 +84,7 @@ def menu(call):
         if hasattr(call, "message")
         else call.message if isinstance(call, telebot.types.CallbackQuery) else call
     )
-    bot.send_message(message.chat.id, "Under constraction")
-    
+
     if message is not None:
         bot.send_message(
             message.chat.id,
@@ -93,14 +92,12 @@ def menu(call):
             reply_markup=io.get_inline_keyboard(
                 (
                     ("Выбрать голос", "voice"),
-                    ("Выбрать эмоцию", "emotion"),
                     ("Выбрать скорость", "speed"),
                 )
             ),
         )
     else:
         logging.error("Message is None")
- 
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
@@ -123,19 +120,9 @@ def select_voice(message):
         bot.send_message(
             message.chat.id,
             f'Теперь используется голос "{message.text}"',
-            reply_markup=rm,
+            reply_markup=io.get_inline_keyboard(("Выбрать эмоцию", "emotion")),
         )
-        bot.send_message(
-            message.chat.id,
-            "Меню:",
-            reply_markup=io.get_inline_keyboard(
-                (
-                    ("Выбрать голос", "voice"),
-                    ("Выбрать эмоцию", "emotion"),
-                    ("Выбрать скорость", "speed"),
-                )
-            ),
-        )
+        menu(message)
     else:
         bot.send_message(
             message.chat.id,
@@ -154,7 +141,7 @@ def choose_emotion(call):
     bot.send_message(
         message.chat.id,
         "Выбери эмоцию:",
-        reply_markup=io.get_reply_markup(io.list_emotions(message.from_user.id)),
+        reply_markup=io.get_reply_markup(io.list_emotions(message.chat.id)),
     )
     bot.register_next_step_handler(message, select_emotion)
 
@@ -167,17 +154,7 @@ def select_emotion(message):
             f'Теперь используется эмоция "{message.text}"',
             reply_markup=rm,
         )
-        bot.send_message(
-            message.chat.id,
-            "Меню:",
-            reply_markup=io.get_inline_keyboard(
-                (
-                    ("Выбрать голос", "voice"),
-                    ("Выбрать эмоцию", "emotion"),
-                    ("Выбрать скорость", "speed"),
-                )
-            ),
-        )
+        menu(message)
     else:
         bot.send_message(
             message.chat.id,
@@ -203,17 +180,7 @@ def select_speed(message):
         bot.send_message(
             message.chat.id, f'Теперь используется скорость "{message.text}"'
         )
-        bot.send_message(
-            message.chat.id,
-            "Меню:",
-            reply_markup=io.get_inline_keyboard(
-                (
-                    ("Выбрать голос", "voice"),
-                    ("Выбрать эмоцию", "emotion"),
-                    ("Выбрать скорость", "speed"),
-                )
-            ),
-        )
+        menu(message)
     else:
         bot.send_message(message.chat.id, "Неверный выбор. Попробуй ещё раз.")
         bot.register_next_step_handler(message, select_speed)

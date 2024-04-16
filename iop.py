@@ -142,7 +142,9 @@ class IOP:
             expires_at = token_data.get("expires_at")
 
             if expires_at <= time.time():
-                logging.info("Время жизни IAM-токена истек. Запуск получения нового токена. (IOP.get_iam_token)")
+                logging.info(
+                    "Время жизни IAM-токена истек. Запуск получения нового токена. (IOP.get_iam_token)"
+                )
                 self.create_new_iam_token()
 
         except FileNotFoundError:
@@ -178,7 +180,10 @@ class IOP:
                     json.dump(token_data, token_file)
 
             else:
-                logging.error("Ошибка при получении ответа (IOP.create_new_iam_token):", response.status_code)
+                logging.error(
+                    "Ошибка при получении ответа (IOP.create_new_iam_token):",
+                    response.status_code,
+                )
                 logging.info("Токен не получен (IOP.create_new_iam_token)")
 
     def get_inline_keyboard(
@@ -276,7 +281,9 @@ class SpeechKit:
         if response.status_code == 200:
             return True, response.content
         else:
-            logging.error(f"Ошибка в запросе (SpeechKit.text_to_speech): {response.content}")
+            logging.error(
+                f"Ошибка в запросе (SpeechKit.text_to_speech): {response.content}"
+            )
             return (
                 False,
                 f"При запросе в SpeechKit возникла ошибка c кодом: {response.status_code}",
