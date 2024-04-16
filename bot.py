@@ -120,7 +120,7 @@ def select_voice(message):
         bot.send_message(
             message.chat.id,
             f'Теперь используется голос "{message.text}"',
-            reply_markup=io.get_inline_keyboard(("Выбрать эмоцию", "emotion")),
+            reply_markup=io.get_inline_keyboard((("Выбрать эмоцию", "emotion"))),
         )
         menu(message)
     else:
