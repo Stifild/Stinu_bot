@@ -6,5 +6,5 @@
     "madirus": null,
     "omazh": ["neutral", "evil"],
     "zahar": ["neutral", "good"],
-    "marina": ["neutral", "friendly", "whisper"]
+    "marina": ["neutral", "friendly"]
 }
