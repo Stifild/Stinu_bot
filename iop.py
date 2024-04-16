@@ -87,7 +87,7 @@ class IOP:
             "limit": 500,
             "ban": False,
             "voice": "zahar",
-            "emotion": "neutral",
+            "emotion": None,
             "speed": 1,
         }
         self.write_json(self.db)
