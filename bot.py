@@ -1,10 +1,9 @@
 import telebot, logging, os
 from config import LOGS_PATH, TELEGRAM_TOKEN, ADMIN_LIST
 from iop import IOP
-from telebot.types import ReplyKeyboardRemove as rma
 
 io = IOP()
-rm = rma
+rm = telebot.types.ReplyKeyboardRemove()
 
 logging.basicConfig(
     filename=LOGS_PATH,
