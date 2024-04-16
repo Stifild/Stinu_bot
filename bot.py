@@ -86,7 +86,7 @@ def menu(call):
         else call.message if isinstance(call, telebot.types.CallbackQuery) else call
     )
     bot.send_message(message.chat.id, "Under constraction")
-    """
+    
     if message is not None:
         bot.send_message(
             message.chat.id,
@@ -101,7 +101,7 @@ def menu(call):
         )
     else:
         logging.error("Message is None")
- """
+ 
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
