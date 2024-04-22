@@ -353,7 +353,7 @@ class Database:
             self.executer(
                 f"INSERT INTO {TABLE_NAME} "
                 f"(user_id, tts_limit, stt_limit, ban, voice, emotion, speed) "
-                f"VALUES (?, ?, ?, ?, zahar, Null, 1);",
+                f"VALUES (?, ?, ?, ?, 'zahar', Null, 1);",
                 (user_id, TTS_LIMIT, STT_LIMIT, ban),
             )
             logging.info(f"Добавлен пользователь {user_id}")
