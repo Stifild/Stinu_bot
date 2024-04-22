@@ -51,7 +51,7 @@ class IOP:
     """
 
     def __init__(self):
-        Database()
+        self.dbc = Database()
 
     def sing_up(self, id: int):
         """
@@ -62,7 +62,7 @@ class IOP:
         """
         ids = [user[1] for user in Database.get_all_users()]
         if id not in ids:
-            Database.add_user(id)
+            self.dbc.add_user(id)
 
     def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
         """
@@ -86,7 +86,7 @@ class IOP:
             if status:
                 with open(f"./data/temp/{str(id)}.ogg", "wb") as f:
                     f.write(result)
-                Database.update_value(
+                self.dbc.update_value(
                     id, "tts_limit", int(self.db(id)["tts_limit"]) - len(text)
                 )
                 logging.info("Успешная генерация (IOP.tts)")
@@ -223,8 +223,8 @@ class IOP:
         voice = self.db(id)["voice"]
         return self.read_json(VJSON_PATH)[voice]
 
-    def db(id: int):
-        return Database.get_user_data(id)
+    def db(self, id: int):
+        return self.dbc.get_user_data(id)
 
 
 class SpeechKit(IOP):
