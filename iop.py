@@ -310,7 +310,7 @@ class SpeechKit(IOP):
                 return True
             else:
                 logging.warning(f"Проблема с запросом (IOP.tts): {result}")
-                return tuple(False, result)
+                return (False, result)
         else:
             logging.warning("Ошибка со стороны пользователя (IOP.tts)")
             return (
