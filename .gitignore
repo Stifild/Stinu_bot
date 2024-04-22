@@ -129,6 +129,7 @@ env.bak/
 venv.bak/
 token_data.json
 users.json
+*.db
 
 # Spyder project settings
 .spyderproject

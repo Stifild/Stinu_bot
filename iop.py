@@ -333,13 +333,13 @@ class SpeechKit(IOP):
                 self.dbc.update_value(
                     id, "tts_limit", int(self.db(id)["tts_limit"]) - len(text)
                 )
-                logging.info("Успешная генерация (IOP.tts)")
+                logging.info("Успешная генерация (SpeechKit.tts)")
                 return True
             else:
-                logging.warning(f"Проблема с запросом (IOP.tts): {result}")
+                logging.warning(f"Проблема с запросом (SpeechKit.tts): {result}")
                 return (False, result)
         else:
-            logging.warning("Ошибка со стороны пользователя (IOP.tts)")
+            logging.warning("Ошибка со стороны пользователя (SpeechKit.tts)")
             return (
                 False,
                 f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
@@ -372,11 +372,12 @@ class SpeechKit(IOP):
             else:
                 result = self.speech_to_text(file, id)
                 if result[0] == True:
+                    logging.info("Успех (SpeechKit.stt)")
                     return (True, result[1])
                 else:
                     return (False, result[1])
         else:
-            logging.warning("Ошибка со стороны пользователя (IOP.stt)")
+            logging.warning("Ошибка со стороны пользователя (SpeechKit.stt)")
             return (
                 False,
                 "Проблема с запросом. У вас закончился лимит",
