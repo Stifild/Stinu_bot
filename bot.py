@@ -1,8 +1,9 @@
 import telebot, logging, os
 from config import LOGS_PATH, TELEGRAM_TOKEN, ADMIN_LIST
-from iop import IOP
+from iop import IOP, SpeechKit
 
 io = IOP()
+sk = SpeechKit()
 rm = telebot.types.ReplyKeyboardRemove()
 
 logging.basicConfig(
@@ -43,7 +44,7 @@ def help(message):
 
 @bot.message_handler(commands=["tts"])
 def tts(message: telebot.types.Message):
-    result: bool | tuple[bool, str] = io.tts(message)
+    result: bool | tuple[bool, str] = sk.tts(message)
     if result == True:
         bot.send_message(message.chat.id, "Лови результат:")
         with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
