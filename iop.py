@@ -53,6 +53,7 @@ class IOP:
 
     def __init__(self):
         self.dbc = Database()
+        self.sk = SpeechKit()
 
     def sing_up(self, id: int):
         """
@@ -68,7 +69,7 @@ class IOP:
         elif id not in ids and MAX_USERS >= len(ids):
             self.dbc.add_user(id, 1)
             return
-        else: 
+        else:
             return
 
     def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
@@ -89,7 +90,7 @@ class IOP:
             and len(text) < 251
             and len(text) < int(self.db(id)["tts_limit"])
         ):
-            status, result = SpeechKit.text_to_speech(text, str(id))
+            status, result = self.sk.text_to_speech(text, str(id))
             if status:
                 with open(f"./data/temp/{str(id)}.ogg", "wb") as f:
                     f.write(result)
