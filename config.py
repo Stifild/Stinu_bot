@@ -7,11 +7,15 @@ load_dotenv()
 LOGS_PATH = "./data/logs.log"
 JSON_PATH = "./data/users.json"
 VJSON_PATH = "./data/voices.json"
+DB_PATH = "./data/database.db"
+TABLE_NAME = "texts"
 
 FOLDER_ID = os.getenv("FOLDER_ID")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
-MAX_ON_USER_TOKENS = 500
+TTS_LIMIT = 500
+STT_LIMIT = 500
+GPT_LIMIT = 1000
 ADMIN_LIST = [6303315695]
 MAX_USERS = 2
 

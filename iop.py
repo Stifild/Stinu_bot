@@ -1,4 +1,4 @@
-import logging, json, requests, os, telebot, time
+import logging, json, requests, os, telebot, time, sqlite3
 from config import (
     LOGS_PATH,
     JSON_PATH,
@@ -6,6 +6,10 @@ from config import (
     IAM_TOKEN_PATH,
     VJSON_PATH,
     IAM_TOKEN_ENDPOINT,
+    DB_PATH,
+    TABLE_NAME,
+    TTS_LIMIT,
+    STT_LIMIT,
 )
 
 
@@ -47,34 +51,7 @@ class IOP:
     """
 
     def __init__(self):
-        self.db = self.read_json()
-
-    def write_json(self, data: dict, path: str = JSON_PATH):
-        """
-        Writes data to a JSON file.
-
-        Args:
-            data (dict): The data to be written.
-            path (str, optional): The path of the JSON file. Defaults to JSON_PATH.
-        """
-        with open(path, "w") as f:
-            json.dump(data, f, indent=4)
-
-    def read_json(self, path: str = JSON_PATH):
-        """
-        Reads data from a JSON file.
-
-        Args:
-            path (str, optional): The path of the JSON file. Defaults to JSON_PATH.
-
-        Returns:
-            dict: The data read from the JSON file.
-        """
-        try:
-            with open(path, "r") as f:
-                return json.load(f)
-        except (json.decoder.JSONDecodeError, FileNotFoundError):
-            return {}
+        Database()
 
     def sing_up(self, id: int):
         """
@@ -83,14 +60,9 @@ class IOP:
         Args:
             id (int): The ID of the user.
         """
-        self.db[str(id)] = {
-            "limit": 500,
-            "ban": False,
-            "voice": "zahar",
-            "emotion": None,
-            "speed": 1,
-        }
-        self.write_json(self.db)
+        ids = [user[1] for user in Database.get_all_users()]
+        if id not in ids:
+            Database.add_user(id)
 
     def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
         """
@@ -108,14 +80,13 @@ class IOP:
         if (
             len(text) > 2
             and len(text) < 251
-            and len(text) < int(self.db[str(id)]["limit"])
+            and len(text) < int(self.db(id)["tts_limit"])
         ):
             status, result = SpeechKit.text_to_speech(text, str(id))
             if status:
                 with open(f"./data/temp/{str(id)}.ogg", "wb") as f:
                     f.write(result)
-                self.db[str(id)]["limit"] = int(self.db[str(id)]["limit"]) - len(text)
-                self.write_json(self.db)
+                Database.update_value(id, "tts_limit", int(self.db(id)["tts_limit"]) - len(text)) 
                 logging.info("Успешная генерация (IOP.tts)")
                 return True
             else:
@@ -125,7 +96,7 @@ class IOP:
             logging.warning("Ошибка со стороны пользователя (IOP.tts)")
             return (
                 False,
-                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db[str(id)]['limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
+                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
             )
 
     def get_iam_token(self) -> str:
@@ -228,16 +199,16 @@ class IOP:
         else:
             return None
 
-    def list_voices(self) -> tuple[str]:
+    def list_voices(self) -> list[str]:
         """
         Lists available voices.
 
         Returns:
-            tuple[str]: The list of available voices.
+            list[str]: The list of available voices.
         """
         return list(self.read_json(VJSON_PATH).keys())
 
-    def list_emotions(self, id: int) -> tuple[str]:
+    def list_emotions(self, id: int) -> list[str]:
         """
         Lists available emotions for a user.
 
@@ -245,28 +216,30 @@ class IOP:
             id (int): The ID of the user.
 
         Returns:
-            tuple[str]: The list of available emotions.
+            list[str]: The list of available emotions.
         """
-        voice = self.db[str(id)]["voice"]
+        voice = self.db(id)["voice"]
         return self.read_json(VJSON_PATH)[voice]
+    
+    def db(id: int):
+        return Database.get_user_data(id)
 
 
-class SpeechKit:
+class SpeechKit(IOP):
 
-    def text_to_speech(text: str, id: str):
-        io = IOP()
-        iam_token = io.get_iam_token()
+    def text_to_speech(self, text: str, id: str):
+        iam_token = self.get_iam_token()
         folder_id = FOLDER_ID
-        voice = str(io.db[id]["voice"])
-        emotion = str(io.db[id]["emotion"]) if not None else ""
-        speed = str(io.db[id]["speed"])
+        voice = str(self.db(id)["voice"])
+        emotion = str(self.db(id)["emotion"]) if not None else ""
+        speed = str(self.db(id)["speed"])
 
         headers = {
             "Authorization": f"Bearer {iam_token}",
         }
         data = {
-            "text": text,  # текст, который нужно преобразовать в голосовое сообщение
-            "lang": "ru-RU",  # язык текста - русский
+            "text": text,
+            "lang": "ru-RU",
             "voice": voice,
             "emotion": emotion,
             "speed": speed,
@@ -288,3 +261,144 @@ class SpeechKit:
                 False,
                 f"При запросе в SpeechKit возникла ошибка c кодом: {response.status_code}",
             )
+
+    def speech_to_text(self, file: bin, id: str):
+        iam_token = self.get_iam_token()
+        folder_id = FOLDER_ID
+
+        params = "&".join([
+            "topic=general",
+            f"folderId={folder_id}",
+            "lang=ru-RU"
+        ])
+
+        headers = {
+            'Authorization': f'Bearer {iam_token}',
+        }
+            
+        response = requests.post(
+                f"https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?{params}",
+            headers=headers, 
+            data=file
+        )
+        
+        decoded_data = response.json()
+        if decoded_data.get("error_code") is None:
+            return (True, decoded_data.get("result"))
+        else:
+            logging.error(
+                f"Ошибка в запросе (SpeechKit.speech_to_text): {decoded_data.get("error_code")}"
+            )
+            return (False, f"При запросе в SpeechKit возникла ошибка с кодом: {decoded_data.get("error_code")}")
+
+class GPT(IOP):
+    ...
+
+class Monetize(IOP):
+    ...
+
+class Database:
+    def __init__(self):
+        self.create_table()
+
+    def executer(self, command: str, data: tuple = None):
+        try:
+            self.connection = sqlite3.connect(DB_PATH)
+            self.cursor = self.connection.cursor()
+
+            if data:
+                self.cursor.execute(command, data)
+                self.connection.commit()
+
+            else:
+                self.cursor.execute(command)
+
+        except sqlite3.Error as e:
+            logging.error("Ошибка при выполнении запроса (executer): ", e)
+
+        else:
+            result = self.cursor.fetchall()
+            self.connection.close()
+            return result
+
+
+    def create_table(self):
+        self.executer(
+            f"""CREATE TABLE IF NOT EXISTS {TABLE_NAME}
+            (id INTEGER PRIMARY KEY,
+            user_id INTEGER,
+            tts_limit INTEGER,
+            stt_limit INTEGER,
+            gpt_limit INTEGER,
+            gpt_chat TEXT,
+            ban INTEGER,
+            voice TEXT,
+            emotion TEXT,
+            speed TEXT,
+            debt INTEGER)
+            """
+            
+        )
+        logging.info(f"Таблица {TABLE_NAME} создана")
+
+
+    def add_user(self, user_id: int, ban: int):
+        try:
+            self.executer(
+                f"INSERT INTO {TABLE_NAME} "
+                f"(user_id, tts_limit, stt_limit, ban, voice, emotion, speed) "
+                f"VALUES (?, ?, ?, ?, zahar, Null, 1);", (user_id, TTS_LIMIT, STT_LIMIT, ban)
+            )
+            logging.info(f"Добавлен пользователь {user_id}")
+        except Exception as e:
+            logging.error(f"Возникла ошибка при добавлении пользователя {user_id} (DataBase.add_user): {e}")
+
+
+    def check_user(self, user_id: int) -> bool:
+        try:
+            result = self.executer(f"SELECT user_id FROM {TABLE_NAME} WHERE user_id=?", (user_id,))
+            return bool(result)
+        except Exception as e:
+            logging.error(f"Возникла ошибка при проверке пользователя {user_id}: {e}")
+        
+
+
+    def update_value(self, user_id: int, column: str, value):
+        try:
+            self.executer(f"UPDATE {TABLE_NAME} SET {column}=? WHERE user_id=?", (value, user_id))
+            logging.info(f"Обновлено значение {column} для пользователя {user_id}")
+        except Exception as e:
+            logging.error(f"Возникла ошибка при обновлении значения {column} для пользователя {user_id}: {e}")
+
+
+    def get_user_data(self, user_id: int):
+        try:
+            result = self.executer(f"SELECT * FROM {TABLE_NAME} WHERE user_id=?", (user_id,))
+            presult = {
+                "tts_limit": result[0][2],
+                "stt_limit": result[0][3],
+                "gpt_limit": result[0][4],
+                "gpt_chat": result[0][5],
+                "ban": result[0][6],
+                "voice": result[0][7],
+                "emotion": result[0][8],
+                "speed": result[0][9],
+                "debt": result[0][10]
+            }
+            return presult
+        except Exception as e:
+            logging.error(f"Возникла ошибка при получении данных пользователя {user_id}: {e}")
+    
+    def get_all_users(self) -> list[tuple[int, int, int, int, int, str, int, str, str, str]]:
+        try:
+            result = self.executer(f"SELECT * FROM {TABLE_NAME}")
+            return result
+        except Exception as e:
+            logging.error(f"Возникла ошибка при получении данных всех пользователей: {e}")
+
+    def delete_user(self, user_id: int):
+        try:
+            self.executer(f"DELETE FROM {TABLE_NAME} WHERE user_id=?", (user_id,))
+            logging.warning(f"Удален пользователь {user_id}")
+        except Exception as e:
+            logging.error(f"Возникла ошибка при удалении пользователя {user_id}: {e}")

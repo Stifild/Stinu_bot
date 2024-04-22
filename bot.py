@@ -21,8 +21,7 @@ def start(message: telebot.types.Message):
         message.chat.id,
         "Привет! Я бот для работы с SpeachKit. Напиши /help для подробностей",
     )
-    if str(message.from_user.id) not in io.db.keys():
-        io.sing_up(message.from_user.id)
+    io.sing_up(message.from_user.id)
 
 
 @bot.message_handler(commands=["help"])
@@ -120,7 +119,9 @@ def select_voice(message):
         bot.send_message(
             message.chat.id,
             f'Теперь используется голос "{message.text}"',
-            reply_markup=telebot.util.quick_markup({"Выбрать эмоцию": {"callback_data": "emotion"}}),
+            reply_markup=telebot.util.quick_markup(
+                {"Выбрать эмоцию": {"callback_data": "emotion"}}
+            ),
         )
     else:
         bot.send_message(
