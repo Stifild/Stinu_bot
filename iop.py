@@ -26,34 +26,14 @@ logging.basicConfig(
 
 class IOP:
     """
-    The IOP class represents an Input-Output Processor.
+    The IOP class represents the Input-Output Processor.
 
-    It provides methods for reading and writing JSON files, managing user data,
-    performing text-to-speech conversion, retrieving IAM tokens, creating inline
-    keyboards and reply markups, and listing available voices and emotions.
-
-    Attributes:
-        db (dict): The user database stored as a dictionary.
-
-    Methods:
-        __init__(): Initializes the IOP object and reads the user database from a JSON file.
-        write_json(data: dict, path: str = JSON_PATH): Writes data to a JSON file.
-        read_json(path: str = JSON_PATH): Reads data from a JSON file.
-        sing_up(id: int): Adds a new user to the database.
-        tts(message: telebot.types.Message) -> bool | tuple[bool, str]: Converts text to speech.
-        get_iam_token() -> str: Retrieves the IAM token for authentication.
-        create_new_iam_token(): Creates a new IAM token.
-        get_inline_keyboard(values: tuple[tuple[str, str]]) -> telebot.types.InlineKeyboardMarkup:
-            Creates an inline keyboard markup.
-        get_reply_markup(values: list[str]) -> telebot.types.ReplyKeyboardMarkup | None:
-            Creates a reply markup.
-        list_voices() -> tuple[str]: Lists available voices.
-        list_emotions(id: int) -> tuple[str]: Lists available emotions for a user.
+    It provides methods for user registration, IAM token retrieval, creating inline and reply keyboard markups,
+    listing available voices and emotions, and accessing user data from the database.
     """
 
     def __init__(self):
         self.dbc = Database()
-        self.sk = SpeechKit()
 
     def sing_up(self, id: int):
         """
@@ -71,43 +51,6 @@ class IOP:
             return
         else:
             return
-
-    def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
-        """
-        Converts text to speech.
-
-        Args:
-            message (telebot.types.Message): The message containing the text to be converted.
-
-        Returns:
-            bool or tuple[bool, str]: True if the conversion is successful, otherwise a tuple
-            containing False and an error message.
-        """
-        text = telebot.util.extract_arguments(message.text)
-        id = message.from_user.id
-        if (
-            len(text) > 2
-            and len(text) < 251
-            and len(text) < int(self.db(id)["tts_limit"])
-        ):
-            status, result = self.sk.text_to_speech(text, str(id))
-            if status:
-                with open(f"./data/temp/{str(id)}.ogg", "wb") as f:
-                    f.write(result)
-                self.dbc.update_value(
-                    id, "tts_limit", int(self.db(id)["tts_limit"]) - len(text)
-                )
-                logging.info("Успешная генерация (IOP.tts)")
-                return True
-            else:
-                logging.warning(f"Проблема с запросом (IOP.tts): {result}")
-                return tuple(False, result)
-        else:
-            logging.warning("Ошибка со стороны пользователя (IOP.tts)")
-            return (
-                False,
-                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
-            )
 
     def get_iam_token(self) -> str:
         """
@@ -232,12 +175,33 @@ class IOP:
         return self.read_json(VJSON_PATH)[voice]
 
     def db(self, id: int):
+        """
+        Retrieves user data from the database.
+
+        Args:
+            id (int): The ID of the user.
+
+        Returns:
+            dict: The user data.
+        """
         return self.dbc.get_user_data(id)
 
 
 class SpeechKit(IOP):
 
     def text_to_speech(self, text: str, id: str):
+        """
+        Converts the given text to speech using the Yandex SpeechKit API.
+
+        Args:
+            text (str): The text to be converted to speech.
+            id (str): The ID used to retrieve voice, emotion, and speed settings from the database.
+
+        Returns:
+            tuple: A tuple containing a boolean value indicating the success of the request and the response content.
+                - If the request is successful, the first element of the tuple is True and the second element is the response content.
+                - If the request fails, the first element of the tuple is False and the second element is an error message.
+        """
         iam_token = self.get_iam_token()
         folder_id = FOLDER_ID
         voice = str(self.db(id)["voice"])
@@ -273,6 +237,23 @@ class SpeechKit(IOP):
             )
 
     def speech_to_text(self, file: bin, id: str):
+        """
+        Converts speech to text using the Yandex SpeechKit API.
+
+        Args:
+            file (bin): The audio file to be converted.
+            id (str): The ID associated with the audio file.
+
+        Returns:
+            tuple: A tuple containing a boolean value indicating the success of the conversion
+            and the result of the conversion.
+
+            If the conversion is successful, the first element of the tuple is True and the second
+            element is the converted text.
+
+            If an error occurs during the conversion, the first element of the tuple is False and
+            the second element is an error message.
+        """
         iam_token = self.get_iam_token()
         folder_id = FOLDER_ID
 
@@ -299,6 +280,44 @@ class SpeechKit(IOP):
                 False,
                 f'При запросе в SpeechKit возникла ошибка с кодом: {decoded_data.get("error_code")}',
             )
+        
+    def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
+        """
+        Converts text to speech.
+
+        Args:
+            message (telebot.types.Message): The message containing the text to be converted.
+
+        Returns:
+            bool or tuple[bool, str]: True if the conversion is successful, otherwise a tuple
+            containing False and an error message.
+        """
+        text = telebot.util.extract_arguments(message.text)
+        id = message.from_user.id
+        if (
+            len(text) > 2
+            and len(text) < 251
+            and len(text) < int(self.db(id)["tts_limit"])
+        ):
+            status, result = self.text_to_speech(text, str(id))
+            if status:
+                with open(f"./data/temp/{str(id)}.ogg", "wb") as f:
+                    f.write(result)
+                self.dbc.update_value(
+                    id, "tts_limit", int(self.db(id)["tts_limit"]) - len(text)
+                )
+                logging.info("Успешная генерация (IOP.tts)")
+                return True
+            else:
+                logging.warning(f"Проблема с запросом (IOP.tts): {result}")
+                return tuple(False, result)
+        else:
+            logging.warning("Ошибка со стороны пользователя (IOP.tts)")
+            return (
+                False,
+                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
+            )
+
 
 
 class GPT(IOP): ...
@@ -350,6 +369,13 @@ class Database:
         logging.info(f"Таблица {TABLE_NAME} создана")
 
     def add_user(self, user_id: int, ban: int):
+        """
+        Adds a new user to the database.
+
+        Args:
+            user_id (int): The ID of the user.
+            ban (int): The ban status of the user.
+        """
         try:
             self.executer(
                 f"INSERT INTO {TABLE_NAME} "
@@ -364,6 +390,15 @@ class Database:
             )
 
     def check_user(self, user_id: int) -> bool:
+        """
+        Checks if a user exists in the database.
+
+        Args:
+            user_id (int): The ID of the user.
+
+        Returns:
+            bool: True if the user exists, False otherwise.
+        """
         try:
             result = self.executer(
                 f"SELECT user_id FROM {TABLE_NAME} WHERE user_id=?", (user_id,)
@@ -373,6 +408,14 @@ class Database:
             logging.error(f"Возникла ошибка при проверке пользователя {user_id}: {e}")
 
     def update_value(self, user_id: int, column: str, value):
+        """
+        Updates a value for a specific user in the database.
+
+        Args:
+            user_id (int): The ID of the user.
+            column (str): The name of the column to update.
+            value: The new value for the column.
+        """
         try:
             self.executer(
                 f"UPDATE {TABLE_NAME} SET {column}=? WHERE user_id=?", (value, user_id)
@@ -384,6 +427,15 @@ class Database:
             )
 
     def get_user_data(self, user_id: int):
+        """
+        Retrieves the data for a specific user from the database.
+
+        Args:
+            user_id (int): The ID of the user.
+
+        Returns:
+            dict: A dictionary containing the user data.
+        """
         try:
             result = self.executer(
                 f"SELECT * FROM {TABLE_NAME} WHERE user_id=?", (user_id,)
@@ -408,6 +460,12 @@ class Database:
     def get_all_users(
         self,
     ) -> list[tuple[int, int, int, int, int, str, int, str, str, str]]:
+        """
+        Retrieves the data for all users from the database.
+
+        Returns:
+            list[tuple[int, int, int, int, int, str, int, str, str, str]]: A list of tuples containing the user data.
+        """
         try:
             result = self.executer(f"SELECT * FROM {TABLE_NAME}")
             return result
@@ -417,6 +475,12 @@ class Database:
             )
 
     def delete_user(self, user_id: int):
+        """
+        Deletes a user from the database.
+
+        Args:
+            user_id (int): The ID of the user.
+        """
         try:
             self.executer(f"DELETE FROM {TABLE_NAME} WHERE user_id=?", (user_id,))
             logging.warning(f"Удален пользователь {user_id}")
