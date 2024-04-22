@@ -60,7 +60,7 @@ class IOP:
         Args:
             id (int): The ID of the user.
         """
-        ids = [user[1] for user in Database.get_all_users()]
+        ids = [user[1] for user in self.dbc.get_all_users()]
         if id not in ids:
             self.dbc.add_user(id)
 
