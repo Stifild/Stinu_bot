@@ -280,7 +280,7 @@ class SpeechKit(IOP):
                 False,
                 f'При запросе в SpeechKit возникла ошибка с кодом: {decoded_data.get("error_code")}',
             )
-        
+
     def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
         """
         Converts text to speech.
@@ -317,7 +317,6 @@ class SpeechKit(IOP):
                 False,
                 f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
             )
-
 
 
 class GPT(IOP): ...
