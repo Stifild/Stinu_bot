@@ -361,8 +361,8 @@ class SpeechKit(IOP):
                 with open(f"./data/temp/{str(id)}_full.ogg", "xb") as f:
                     f.write(file)
                 files = self.split_voice_file(f"./data/temp/{str(id)}_full.ogg", id)
-                for file in files:
-                    with open(file, "rb") as f:
+                for filer in files:
+                    with open(filer, "rb") as f:
                         result = self.speech_to_text(f, id)
                         if result[0] == True:
                             text += result[1]
@@ -370,7 +370,7 @@ class SpeechKit(IOP):
                             return (False, result[1])
                 return (True, text)
             else:
-                result = self.speech_to_text(f, id)
+                result = self.speech_to_text(file, id)
                 if result[0] == True:
                     return (True, result[1])
                 else:
