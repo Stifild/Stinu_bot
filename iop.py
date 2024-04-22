@@ -10,6 +10,7 @@ from config import (
     TABLE_NAME,
     TTS_LIMIT,
     STT_LIMIT,
+    MAX_USERS,
 )
 
 
@@ -61,8 +62,14 @@ class IOP:
             id (int): The ID of the user.
         """
         ids = [user[1] for user in self.dbc.get_all_users()]
-        if id not in ids:
-            self.dbc.add_user(id)
+        if id not in ids and MAX_USERS < len(ids):
+            self.dbc.add_user(id, 0)
+            return
+        elif id not in ids and MAX_USERS >= len(ids):
+            self.dbc.add_user(id, 1)
+            return
+        else: 
+            return
 
     def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
         """
