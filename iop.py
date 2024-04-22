@@ -1,4 +1,4 @@
-import logging, json, requests, os, telebot, time, sqlite3
+import logging, json, requests, os, telebot, time, sqlite3, math
 from config import (
     LOGS_PATH,
     JSON_PATH,
@@ -174,6 +174,33 @@ class IOP:
         voice = self.db(id)["voice"]
         return self.read_json(VJSON_PATH)[voice]
 
+    def split_voice_file(file_path: str, id: int) -> list[str]:
+        """
+        Splits a voice file into multiple files of 30 seconds each.
+
+        Args:
+            file_path (str): The path to the voice file.
+
+        Returns:
+            list[str]: The list of paths to the split voice files.
+        """
+        split_files = []
+        with open(file_path, "rb") as f:
+            voice_data = f.read()
+            voice_size = len(voice_data)
+            num_splits = math.ceil(
+                voice_size / (30 * 16000 * 2)
+            )  # Assuming 16kHz sample rate and 2 bytes per sample
+            for i in range(num_splits):
+                start = i * 30 * 16000 * 2
+                end = min((i + 1) * 30 * 16000 * 2, voice_size)
+                split_voice_data = voice_data[start:end]
+                split_file_path = f"./data/temp/{str(id)}_{i}.ogg"
+                with open(split_file_path, "wb") as split_file:
+                    split_file.write(split_voice_data)
+                split_files.append(split_file_path)
+        return split_files
+
     def db(self, id: int):
         """
         Retrieves user data from the database.
@@ -236,7 +263,7 @@ class SpeechKit(IOP):
                 f"При запросе в SpeechKit возникла ошибка c кодом: {response.status_code}",
             )
 
-    def speech_to_text(self, file: bin, id: str):
+    def speech_to_text(self, file: bytes, id: str) -> tuple[bool, str]:
         """
         Converts speech to text using the Yandex SpeechKit API.
 
@@ -316,6 +343,43 @@ class SpeechKit(IOP):
             return (
                 False,
                 f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
+            )
+
+    def stt(
+        self, message: telebot.types.Message, bot: telebot.TeleBot
+    ) -> tuple[bool, str]:
+        db = self.db(message.from_user.id)
+        duration = message.voice.duration
+        id = message.from_user.id
+        text = ""
+        stt_blocks_num = math.ceil(duration / 15)
+        if db["stt_limit"] - stt_blocks_num >= 0:
+            file_id = message.voice.file_id
+            file_info = bot.get_file(file_id)
+            file = bot.download_file(file_info.file_path)
+            if duration > 30:
+                with open(f"./data/temp/{str(id)}_full.ogg", "xb") as f:
+                    f.write(file)
+                files = self.split_voice_file(f"./data/temp/{str(id)}_full.ogg", id)
+                for file in files:
+                    with open(file, "rb") as f:
+                        result = self.speech_to_text(f, id)
+                        if result[0] == True:
+                            text += result[1]
+                        else:
+                            return (False, result[1])
+                return (True, text)
+            else:
+                result = self.speech_to_text(f, id)
+                if result[0] == True:
+                    return (True, result[1])
+                else:
+                    return (False, result[1])
+        else:
+            logging.warning("Ошибка со стороны пользователя (IOP.stt)")
+            return (
+                False,
+                "Проблема с запросом. У вас закончился лимит",
             )
 
 

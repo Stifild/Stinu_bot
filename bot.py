@@ -76,6 +76,40 @@ def tts(message: telebot.types.Message):
         )
 
 
+@bot.message_handler(commands=["stt"])
+def stt_notification(message: telebot.types.Message):
+    bot.send_message(message.chat.id, "Присылай голос")
+
+
+@bot.message_handler(content_types=["voice"])
+def stt(message: telebot.types.Message):
+    result: tuple[bool, str] = sk.stt(message, bot)
+    if result == True:
+        bot.send_message(
+            message.chat.id,
+            result[1],
+            reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}),
+        )
+    elif not result[0]:
+        bot.send_message(
+            message.chat.id,
+            result[1],
+            reply_markup=(
+                telebot.util.quick_markup(
+                    {
+                        "Вики по кодам ошибок": {
+                            "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                        },
+                        "Меню": {"callback_data": "menu"},
+                    },
+                    1,
+                )
+                if "кодом:" in result[1]
+                else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
+            ),
+        )
+
+
 @bot.callback_query_handler(func=lambda call: call.data == "menu")
 @bot.message_handler(commands=["menu"])
 def menu(call):
