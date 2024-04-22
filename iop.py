@@ -286,9 +286,7 @@ class SpeechKit(IOP):
         if decoded_data.get("error_code") is None:
             return (True, decoded_data.get("result"))
         else:
-            logging.error(
-                f"Ошибка в запросе (SpeechKit.speech_to_text): {decoded_data.get("error_code")}"
-            )
+            logging.error(f"Ошибка в запросе (SpeechKit.speech_to_text): {decoded_data.get("error_code")}")
             return (False, f"При запросе в SpeechKit возникла ошибка с кодом: {decoded_data.get("error_code")}")
 
 class GPT(IOP):
