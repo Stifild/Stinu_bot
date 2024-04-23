@@ -345,6 +345,44 @@ class SpeechKit(IOP):
                 f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
             )
 
+    def stt(
+        self, message: telebot.types.Message, bot: telebot.TeleBot
+    ) -> tuple[bool, str]:
+        db = self.db(message.from_user.id)
+        duration = message.voice.duration
+        id = message.from_user.id
+        text = ""
+        stt_blocks_num = math.ceil(duration / 15)
+        if db["stt_limit"] - stt_blocks_num >= 0:
+            file_id = message.voice.file_id
+            file_info = bot.get_file(file_id)
+            file = bot.download_file(file_info.file_path)
+            if duration > 30:
+                with open(f"./data/temp/{str(id)}_full.ogg", "xb") as f:
+                    f.write(file)
+                files = self.split_voice_file(f"./data/temp/{str(id)}_full.ogg", id)
+                for filer in files:
+                    with open(filer, "rb") as f:
+                        result = self.speech_to_text(f, id)
+                        if result[0] == True:
+                            text += result[1]
+                        else:
+                            return (False, result[1])
+                return (True, text)
+            else:
+                result = self.speech_to_text(file, id)
+                if result[0] == True:
+                    logging.info("Успех (SpeechKit.stt)")
+                    return (True, result[1])
+                else:
+                    return (False, result[1])
+        else:
+            logging.warning("Ошибка со стороны пользователя (SpeechKit.stt)")
+            return (
+                False,
+                "Проблема с запросом. У вас закончился лимит",
+            )
+
 
 class GPT(IOP): ...
 
