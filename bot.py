@@ -120,7 +120,7 @@ def stt(message: telebot.types.Message) -> tuple[bool, str]:
 
 @bot.message_handler(content_types=["voice"])
 def sttb(message: telebot.types.Message):
-    result: tuple[bool, str] = stt(message, bot)
+    result: tuple[bool, str] = stt(message)
     if result == True:
         bot.send_message(
             message.chat.id,
