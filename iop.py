@@ -174,7 +174,7 @@ class IOP:
         voice = self.db(id)["voice"]
         return self.read_json(VJSON_PATH)[voice]
 
-    def split_voice_file(file_path: str, id: int) -> list[str]:
+    def split_voice_file(self, file_path: str, id: int) -> list[str]:
         """
         Splits a voice file into multiple files of 30 seconds each.
 
