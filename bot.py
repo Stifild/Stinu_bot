@@ -29,7 +29,7 @@ def start(message: telebot.types.Message):
 def help(message):
     bot.send_message(
         message.chat.id,
-        "Список команд:\n/tts <текст> - озвучить текст\n/menu - показать меню",
+        "Список команд:\n/tts <текст> - озвучить текст\n/menu - показать меню\n/stt - расшифровать аудио",
         reply_markup=(
             telebot.util.quick_markup(
                 {
