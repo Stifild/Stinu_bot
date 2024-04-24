@@ -358,6 +358,7 @@ class SpeechKit(IOP):
             file_info = bot.get_file(file_id)
             file = bot.download_file(file_info.file_path)
             if duration > 30:
+                """
                 with open(f"./data/temp/{str(id)}_full.ogg", "wb") as f:
                     f.write(file)
                 files = self.split_voice_file(f"./data/temp/{str(id)}_full.ogg", id)
@@ -371,10 +372,12 @@ class SpeechKit(IOP):
                         return (False, result[1])
                     os.remove(filer)
                 os.remove(f"./data/temp/{str(id)}_full.ogg")
-                return (True, text)
+                """
+                return (False, "Фича в разработке а пока голосовые только до 30 секунд)")
             else:
                 result = self.speech_to_text(file, id)
                 if result[0] == True:
+                    self.dbc.update_value("stt_limit", db["stt_limit"] - stt_blocks_num)
                     logging.info("Успех (SpeechKit.stt)")
                     return (True, result[1])
                 else:
