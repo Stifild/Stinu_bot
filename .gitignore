@@ -130,6 +130,7 @@ venv.bak/
 token_data.json
 users.json
 *.db
+.vscode
 
 # Spyder project settings
 .spyderproject
