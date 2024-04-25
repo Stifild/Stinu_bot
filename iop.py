@@ -377,7 +377,7 @@ class SpeechKit(IOP):
             else:
                 result = self.speech_to_text(file, id)
                 if result[0] == True:
-                    self.dbc.update_value("stt_limit", db["stt_limit"] - stt_blocks_num)
+                    self.dbc.update_value(id,"stt_limit", db["stt_limit"] - stt_blocks_num)
                     logging.info("Успех (SpeechKit.stt)")
                     return (True, result[1])
                 else:
