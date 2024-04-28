@@ -1,7 +1,6 @@
-import logging, json, requests, os, telebot, time, sqlite3, math
+import logging, json, requests, os, telebot, time, sqlite3, math, time
 from config import (
     LOGS_PATH,
-    JSON_PATH,
     FOLDER_ID,
     IAM_TOKEN_PATH,
     VJSON_PATH,
