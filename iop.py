@@ -393,7 +393,12 @@ class SpeechKit(IOP):
 class GPT(IOP): ...
 
 
-class Monetize(IOP): ...
+class Monetize(IOP): 
+  def gpt_rate(self, tokens):
+    return tokens*(0.20/1000)
+  def speechkit_recog_rate(self, blocks):
+    return blocks
+    
 
 
 class Database:
