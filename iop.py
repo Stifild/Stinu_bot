@@ -376,11 +376,16 @@ class SpeechKit(IOP):
                     os.remove(filer)
                 os.remove(f"./data/temp/{str(id)}_full.ogg")
                 """
-                return (False, "Фича в разработке а пока голосовые только до 30 секунд)")
+                return (
+                    False,
+                    "Фича в разработке а пока голосовые только до 30 секунд)",
+                )
             else:
                 result = self.speech_to_text(file, id)
                 if result[0] == True:
-                    self.dbc.update_value(id,"stt_limit", db["stt_limit"] - stt_blocks_num)
+                    self.dbc.update_value(
+                        id, "stt_limit", db["stt_limit"] - stt_blocks_num
+                    )
                     logging.info("Успех (SpeechKit.stt)")
                     return (True, result[1])
                 else:
@@ -393,8 +398,8 @@ class SpeechKit(IOP):
             )
 
 
-class GPT(IOP): 
-    
+class GPT(IOP):
+
     def __init__(self):
         self.max_tokens = GPT_LIMIT
         self.temperature = TEMPERATURE
@@ -406,31 +411,25 @@ class GPT(IOP):
         iam_token = self.get_iam_token()
 
         headers = {
-            'Authorization': f'Bearer {iam_token}',
-            'Content-Type': 'application/json'
+            "Authorization": f"Bearer {iam_token}",
+            "Content-Type": "application/json",
         }
         data = {
             "modelUri": f"gpt://{self.folder_id}/{self.gpt_model}/latest",
             "maxTokens": self.max_tokens,
-            "messages": []
+            "messages": [],
         }
 
         for row in messages:
-            data["messages"].append(
-                {
-                    "role": row["role"],
-                    "text": row["content"]
-                }
-            )
+            data["messages"].append({"role": row["role"], "text": row["content"]})
 
         return len(
             requests.post(
                 "https://llm.api.cloud.yandex.net/foundationModels/v1/tokenizeCompletion",
                 json=data,
-                headers=headers
+                headers=headers,
             ).json()["tokens"]
         )
-
 
     def increment_tokens_by_request(self, messages: list[dict]):
         try:
@@ -446,14 +445,13 @@ class GPT(IOP):
         with open(self.tokens_data_path, "w") as token_file:
             json.dump({"tokens_count": tokens_count}, token_file)
 
-
     def ask_gpt(self, messages):
         iam_token = self.get_iam_token()
 
         url = f"https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
         headers = {
-            'Authorization': f'Bearer {iam_token}',
-            'Content-Type': 'application/json'
+            "Authorization": f"Bearer {iam_token}",
+            "Content-Type": "application/json",
         }
 
         data = {
@@ -461,18 +459,13 @@ class GPT(IOP):
             "completionOptions": {
                 "stream": False,
                 "temperature": self.temperature,
-                "maxTokens": self.max_tokens
+                "maxTokens": self.max_tokens,
             },
-            "messages": []
+            "messages": [],
         }
 
         for row in messages:
-            data["messages"].append(
-                {
-                    "role": row["role"],
-                    "text": row["content"]
-                }
-            )
+            data["messages"].append({"role": row["role"], "text": row["content"]})
 
         try:
             response = requests.post(url, headers=headers, json=data)
@@ -484,14 +477,16 @@ class GPT(IOP):
             if response.status_code != 200:
                 logging.ERROR("Ошибка при получении ответа:", response.status_code)
             else:
-                result = response.json()['result']['alternatives'][0]['message']['text']
+                result = response.json()["result"]["alternatives"][0]["message"]["text"]
                 messages.append({"role": "assistant", "content": result})
                 self.increment_tokens_by_request(messages)
                 return result
 
         with open(TOKENS_DATA_PATH, "r") as f:
-            logging.INFO("За всё время израсходовано:", json.load(f)["tokens_count"], "токенов")
-    
+            logging.INFO(
+                "За всё время израсходовано:", json.load(f)["tokens_count"], "токенов"
+            )
+
     @classmethod
     def create_new_iam_token(cls):
         headers = {"Metadata-Flavor": "Google"}
@@ -507,7 +502,7 @@ class GPT(IOP):
             if response.status_code == 200:
                 token_data = {
                     "access_token": response.json().get("access_token"),
-                    "expires_at": response.json().get("expires_in") + time.time()
+                    "expires_at": response.json().get("expires_in") + time.time(),
                 }
 
                 with open(IAM_TOKEN_PATH, "w") as token_file:
@@ -536,12 +531,26 @@ class GPT(IOP):
         return token_data.get("access_token")
 
 
-class Monetize(IOP): 
-  def gpt_rate(self, tokens):
-    return tokens*(0.20/1000)
-  def speechkit_recog_rate(self, blocks):
-    return blocks
-    
+class Monetize(IOP):
+    def gpt_rate(self, tokens):
+        return tokens * (0.20 / 1000)
+
+    def speechkit_recog_rate(self, blocks: int) -> int:
+        return blocks * 0, 16
+
+    def speechkit_synt_rate(self, symbols: int) -> int:
+        return symbols * (1320 / 1000000)
+
+    def cost_calculation(self, id: int, type: str) -> int:
+        user = self.dbc.get_user_data(id)
+        if type == "gpt":
+            return self.gpt_rate(GPT_LIMIT - user["gpt_limit"])
+        elif type == "stt":
+            return self.speechkit_recog_rate(STT_LIMIT - user["stt_limit"])
+        elif type == "tts":
+            return self.speechkit_synt_rate(TTS_LIMIT - user["tts_limit"])
+        else:
+            Exception("Неверный тип технологии для вычесления стоймости")
 
 
 class Database:
