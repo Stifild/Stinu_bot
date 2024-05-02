@@ -42,6 +42,9 @@ def help(message):
     )
 
 
+@bot.message_handler(commands=["ping"])
+def tech_test(message: telebot.types.Message): ... #TODO: тест технологии stt и tts
+
 @bot.message_handler(commands=["tts"])
 def tts(message: telebot.types.Message):
     result: bool | tuple[bool, str] = sk.tts(message)
