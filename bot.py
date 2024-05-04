@@ -180,7 +180,7 @@ def get_debt(call):
     )
     mt.update_debts()
     id = message.from_user.id
-    bot.send_message(id, f"Вот твой счет:\n\nЗа использование Speech to text: {mt.cost_calculation(id, "stt")}\nЗа использование Text to speech: {mt.cost_calculation(id, "tts")}\nЗа использование YaGPT: {mt.cost_calculation(id, "gpt")}\n **В Итоге:** {io.db(id)["debt"]}")
+    bot.send_message(id, f"Вот твой счет:\n\nЗа использование Speech to text: {mt.cost_calculation(id, 'stt')}\nЗа использование Text to speech: {mt.cost_calculation(id, 'tts')}\nЗа использование YaGPT: {mt.cost_calculation(id, 'gpt')}\n **В Итоге:** {io.db(id)['debt']}")
     menu(message)
 
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
