@@ -147,7 +147,7 @@ def get_debt(call):
     message: telebot.types.Message = (
         call.message if call.message else call.callback_query.message
     )
-    mt.update_debts()
+    update_debts(message)
     id = message.from_user.id
     bot.send_message(id, f"Вот твой счет:\n\nЗа использование Speech to text: {mt.cost_calculation(id, 'stt')}\nЗа использование Text to speech: {mt.cost_calculation(id, 'tts')}\nЗа использование YaGPT: {mt.cost_calculation(id, 'gpt')}\n **В Итоге:** {io.db(id)['debt']}")
     menu(message)
