@@ -118,37 +118,6 @@ def stt(message: telebot.types.Message):
 def update_debts(message:telebot.types.Message):
     mt.update_debts()
 
-@bot.message_handler(content_types=["voice", "text"])
-def gptp(message: telebot.types.Message):
-    if message.content_type == "voice":
-        text: tuple[bool, str] = sk.stt(message, bot)
-        if text[0] == True:
-            answer = gpt.asking_gpt(message.from_user.id, text[1])
-            bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
-        else:
-            bot.send_message(
-                message.chat.id,
-                text[1],
-                reply_markup=(
-                    telebot.util.quick_markup(
-                        {
-                            "Вики по кодам ошибок": {
-                                "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
-                            },
-                            "Меню": {"callback_data": "menu"},
-                        },
-                        1,
-                    )
-                    if "кодом:" in text[1]
-                    else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
-                ),
-            )
-    else:
-        answer = gpt.asking_gpt(message.from_user.id, message.text)
-        bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
-
-
-
 @bot.callback_query_handler(func=lambda call: call.data == "menu")
 @bot.message_handler(commands=["menu"])
 def menu(call):
@@ -278,6 +247,35 @@ def logs(message: telebot.types.Message):
             if message.from_user.id in ADMIN_LIST
             else None
         )
+
+@bot.message_handler(content_types=["voice", "text"])
+def gptp(message: telebot.types.Message):
+    if message.content_type == "voice":
+        text: tuple[bool, str] = sk.stt(message, bot)
+        if text[0] == True:
+            answer = gpt.asking_gpt(message.from_user.id, text[1])
+            bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
+        else:
+            bot.send_message(
+                message.chat.id,
+                text[1],
+                reply_markup=(
+                    telebot.util.quick_markup(
+                        {
+                            "Вики по кодам ошибок": {
+                                "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                            },
+                            "Меню": {"callback_data": "menu"},
+                        },
+                        1,
+                    )
+                    if "кодом:" in text[1]
+                    else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
+                ),
+            )
+    else:
+        answer = gpt.asking_gpt(message.from_user.id, message.text)
+        bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
 
 
 bot.infinity_polling()
