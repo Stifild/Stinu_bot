@@ -628,9 +628,9 @@ class Database:
         try:
             self.executer(
                 f"INSERT INTO {TABLE_NAME} "
-                f"(user_id, tts_limit, stt_limit, ban, voice, emotion, speed) "
-                f"VALUES (?, ?, ?, ?, 'zahar', 'neutral', 1);",
-                (user_id, TTS_LIMIT, STT_LIMIT, ban),
+                f"(user_id, tts_limit, stt_limit, gpt_limit, ban, voice, emotion, speed) "
+                f"VALUES (?, ?, ?, ?, ?, 'zahar', 'neutral', 1);",
+                (user_id, TTS_LIMIT, STT_LIMIT, GPT_LIMIT, ban),
             )
             logging.info(f"Добавлен пользователь {user_id}")
         except Exception as e:
