@@ -37,7 +37,7 @@ class IOP:
 
     def __init__(self):
         self.dbc = Database()
-
+    
     def sing_up(self, id: int):
         """
         Adds a new user to the database.
@@ -497,7 +497,8 @@ class GPT(IOP):
             message.append({"role": "user", "content": task})
         answer = self.ask_gpt(message)
         message.append({"role": "assistant", "content": answer})
-        self.dbc.update_value(user_id, "gpt_limit", self.db(user_id)["gpt_limit"]-self.count_tokens(task)-self.count_tokens(answer))
+        current_tokens_used = self.count_tokens_in_dialogue(message)
+        self.dbc.update_value(user_id, "gpt_limit", self.db(user_id)["gpt_limit"]-current_tokens_used)
         self.dbc.update_value(user_id, "gpt_chat", json.dumps(message, ensure_ascii=False))
         return answer
     
@@ -566,6 +567,12 @@ class Monetize(IOP):
             return self.speechkit_synt_rate(TTS_LIMIT - user["tts_limit"])
         else:
             Exception("Неверный тип технологии для вычесления стоймости")
+    
+    def update_debts(self):
+        ids = [user[1] for user in self.dbc.get_all_users()]
+        for id in ids:
+            self.dbc.update_value(id, "debt", self.cost_calculation(id, "gpt") + self.cost_calculation(id, "stt") + self.cost_calculation(id, "tts"))
+            logging.info(f"Обновление долга у пользователя {id}")
 
 
 class Database:

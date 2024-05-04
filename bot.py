@@ -1,10 +1,11 @@
 import telebot, logging, os
 from config import LOGS_PATH, TELEGRAM_TOKEN, ADMIN_LIST
-from iop import IOP, SpeechKit, GPT
+from iop import IOP, SpeechKit, GPT, Monetize
 
 io = IOP()
 sk = SpeechKit()
 gpt = GPT()
+mt = Monetize
 rm = telebot.types.ReplyKeyboardRemove()
 
 logging.basicConfig(
@@ -113,6 +114,10 @@ def stt(message: telebot.types.Message):
             ),
         )
 
+@bot.message_handler(commands=['/debt'])
+def update_debts(message:telebot.types.Message):
+    mt.update_debts()
+
 @bot.message_handler(content_types=["voice", "text"])
 def gptp(message: telebot.types.Message):
     if message.content_type == "voice":
@@ -161,12 +166,22 @@ def menu(call):
                 (
                     ("Выбрать голос", "voice"),
                     ("Выбрать скорость", "speed"),
+                    ("Показать счет", "debt")
                 )
             ),
         )
     else:
         logging.error("Message is None")
 
+@bot.callback_query_handler(func=lambda call: call.data == "debt")
+def get_debt(call):
+    message: telebot.types.Message = (
+        call.message if call.message else call.callback_query.message
+    )
+    mt.update_debts()
+    id = message.from_user.id
+    bot.send_message(id, f"Вот твой счет:\n\nЗа использование Speech to text: {mt.cost_calculation(id, "stt")}\nЗа использование Text to speech: {mt.cost_calculation(id, "tts")}\nЗа использование YaGPT: {mt.cost_calculation(id, "gpt")}\n **В Итоге:** {io.db(id)["debt"]}")
+    menu(message)
 
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
 def choose_voice(call):
