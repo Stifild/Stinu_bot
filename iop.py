@@ -548,14 +548,14 @@ class GPT(IOP):
                 logging.info("Токен не получен")
 
 class Monetize(IOP):
-    def gpt_rate(self, tokens):
+    def gpt_rate(self, tokens: int) -> float:
         return tokens * (0.20 / 1000)
 
-    def speechkit_recog_rate(self, blocks: int) -> int:
-        return blocks * 0, 16
+    def speechkit_recog_rate(self, blocks: int) -> float:
+        return blocks * 0.16
 
-    def speechkit_synt_rate(self, symbols: int) -> int:
-        return symbols * (1320 / 1000000)
+    def speechkit_synt_rate(self, symbols: int) -> float:
+        return float(symbols * (1320 / 1000000))
 
     def cost_calculation(self, id: int, type: str) -> int:
         user = self.dbc.get_user_data(id)
