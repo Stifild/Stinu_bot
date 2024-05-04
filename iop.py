@@ -500,6 +500,26 @@ class GPT(IOP):
         self.dbc.update_value(user_id, "gpt_limit", self.db(user_id)["gpt_limit"]-self.count_tokens(task)-self.count_tokens(answer))
         self.dbc.update_value(user_id, "gpt_chat", json.dumps(message, ensure_ascii=False))
         return answer
+    
+    def count_tokens(self, text: str) -> int:
+        iam_token = self.get_iam_token()
+
+        headers = {
+            "Authorization": f"Bearer {iam_token}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "modelUri": f"gpt://{self.folder_id}/{self.gpt_model}/latest",
+            "messages": text,
+        }
+
+        return len(
+            requests.post(
+                "https://llm.api.cloud.yandex.net/foundationModels/v1/tokenize",
+                json=data,
+                headers=headers,
+            ).json()["tokens"]
+        )
 
     @classmethod
     def create_new_iam_token(cls):
@@ -525,25 +545,6 @@ class GPT(IOP):
             else:
                 logging.error("Ошибка при получении ответа:", response.status_code)
                 logging.info("Токен не получен")
-
-    def get_iam_token(self) -> str:
-        try:
-            with open(IAM_TOKEN_PATH, "r") as token_file:
-                token_data = json.load(token_file)
-
-            expires_at = token_data.get("expires_at")
-
-            if expires_at <= time.time():
-                self.create_new_iam_token()
-
-        except FileNotFoundError:
-            self.create_new_iam_token()
-
-        with open(IAM_TOKEN_PATH, "r") as token_file:
-            token_data = json.load(token_file)
-
-        return token_data.get("access_token")
-
 
 class Monetize(IOP):
     def gpt_rate(self, tokens):
