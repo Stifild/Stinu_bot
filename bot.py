@@ -5,7 +5,7 @@ from iop import IOP, SpeechKit, GPT, Monetize
 io = IOP()
 sk = SpeechKit()
 gpt = GPT()
-mt = Monetize
+mt = Monetize()
 rm = telebot.types.ReplyKeyboardRemove()
 
 logging.basicConfig(
