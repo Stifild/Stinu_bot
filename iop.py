@@ -490,7 +490,7 @@ class GPT(IOP):
     
     def asking_gpt(self, user_id: int, task: str | None = None) -> str:
         try:
-            message = json.loads(self.db(user_id)["messages"])
+            message = json.loads(self.db(user_id)["gpt_chat"])
         except TypeError:
             message = []
         if task:
@@ -498,7 +498,7 @@ class GPT(IOP):
         answer = self.ask_gpt(message)
         message.append({"role": "assistant", "content": answer})
         self.dbc.update_value(user_id, "gpt_limit", self.get_user_data(user_id)["tokens"]-self.count_tokens(task)-self.count_tokens(answer))
-        self.dbc.update_value(user_id, "messages", json.dumps(message, ensure_ascii=False))
+        self.dbc.update_value(user_id, "gpt_chat", json.dumps(message, ensure_ascii=False))
         return answer
 
     @classmethod
