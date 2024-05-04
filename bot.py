@@ -81,6 +81,7 @@ def tts(message: telebot.types.Message):
 @bot.message_handler(commands=["stt"])
 def stt_notification(message: telebot.types.Message):
     bot.send_message(message.chat.id, "Присылай голос")
+    bot.register_next_step_handler(message, stt)
 
 def stt(message: telebot.types.Message):
     if message.content_type != "voice":
