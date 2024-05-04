@@ -401,6 +401,7 @@ class SpeechKit(IOP):
 class GPT(IOP):
 
     def __init__(self):
+        self.dbc = Database()
         self.max_tokens = GPT_LIMIT
         self.temperature = TEMPERATURE
         self.folder_id = FOLDER_ID
@@ -489,7 +490,7 @@ class GPT(IOP):
     
     def asking_gpt(self, user_id: int, task: str | None = None) -> str:
         try:
-            message = json.loads(self.dbc.get_user_data(user_id)["messages"])
+            message = json.loads(self.db(user_id)["messages"])
         except TypeError:
             message = []
         if task:
