@@ -129,7 +129,9 @@ env.bak/
 venv.bak/
 token_data.json
 users.json
+DONT_DELETE_ME.json
 *.db
+*.ogg
 .vscode
 
 # Spyder project settings
