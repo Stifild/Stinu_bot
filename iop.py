@@ -558,7 +558,7 @@ class Monetize(IOP):
         return float(symbols * (1320 / 1000000))
 
     def cost_calculation(self, id: int, type: str) -> int:
-        user = self.dbc.get_user_data(id)
+        user = self.db(id)
         if type == "gpt":
             return self.gpt_rate(GPT_LIMIT - user["gpt_limit"])
         elif type == "stt":
