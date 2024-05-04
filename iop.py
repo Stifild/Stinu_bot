@@ -497,7 +497,7 @@ class GPT(IOP):
             message.append({"role": "user", "content": task})
         answer = self.ask_gpt(message)
         message.append({"role": "assistant", "content": answer})
-        self.dbc.update_value(user_id, "gpt_limit", self.get_user_data(user_id)["tokens"]-self.count_tokens(task)-self.count_tokens(answer))
+        self.dbc.update_value(user_id, "gpt_limit", self.db(user_id)["gpt_limit"]-self.count_tokens(task)-self.count_tokens(answer))
         self.dbc.update_value(user_id, "gpt_chat", json.dumps(message, ensure_ascii=False))
         return answer
 
