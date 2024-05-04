@@ -112,7 +112,7 @@ class IOP:
                     response.status_code,
                 )
                 logging.info("Токен не получен (IOP.create_new_iam_token)")
-
+    
     def get_inline_keyboard(
         self, values: tuple[tuple[str, str]]
     ) -> telebot.types.InlineKeyboardMarkup:
@@ -486,6 +486,19 @@ class GPT(IOP):
             logging.INFO(
                 "За всё время израсходовано:", json.load(f)["tokens_count"], "токенов"
             )
+    
+    def asking_gpt(self, user_id: int, task: str | None = None) -> str:
+        try:
+            message = json.loads(self.dbc.get_user_data(user_id)["messages"])
+        except TypeError:
+            message = []
+        if task:
+            message.append({"role": "user", "content": task})
+        answer = self.ask_gpt(message)
+        message.append({"role": "assistant", "content": answer})
+        self.update_value(user_id, "gpt_limit", self.get_user_data(user_id)["tokens"]-self.count_tokens(task)-self.count_tokens(answer))
+        self.update_value(user_id, "messages", json.dumps(message, ensure_ascii=False))
+        return answer
 
     @classmethod
     def create_new_iam_token(cls):

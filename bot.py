@@ -1,9 +1,10 @@
 import telebot, logging, os
 from config import LOGS_PATH, TELEGRAM_TOKEN, ADMIN_LIST
-from iop import IOP, SpeechKit
+from iop import IOP, SpeechKit, GPT
 
 io = IOP()
 sk = SpeechKit()
+gpt = GPT()
 rm = telebot.types.ReplyKeyboardRemove()
 
 logging.basicConfig(
@@ -81,9 +82,10 @@ def tts(message: telebot.types.Message):
 def stt_notification(message: telebot.types.Message):
     bot.send_message(message.chat.id, "Присылай голос")
 
-
-@bot.message_handler(content_types=["voice"])
 def stt(message: telebot.types.Message):
+    if message.content_type != "voice":
+        bot.send_message(message.chat.id, "Это не голос")
+        return
     result: tuple[bool, str] = sk.stt(message, bot)
     if result[0] == True:
         bot.send_message(
@@ -109,6 +111,36 @@ def stt(message: telebot.types.Message):
                 else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
             ),
         )
+
+@bot.message_handler(content_types=["voice", "text"])
+def gptp(message: telebot.types.Message):
+    if message.content_type == "voice":
+        text: tuple[bool, str] = sk.stt(message, bot)
+        if text[0] == True:
+            answer = gpt.asking_gpt(message.from_user.id, text[1])
+            bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
+        else:
+            bot.send_message(
+                message.chat.id,
+                text[1],
+                reply_markup=(
+                    telebot.util.quick_markup(
+                        {
+                            "Вики по кодам ошибок": {
+                                "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                            },
+                            "Меню": {"callback_data": "menu"},
+                        },
+                        1,
+                    )
+                    if "кодом:" in text[1]
+                    else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
+                ),
+            )
+    else:
+        answer = gpt.asking_gpt(message.from_user.id, message.text)
+        bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
+
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "menu")
