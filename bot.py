@@ -17,7 +17,14 @@ logging.basicConfig(
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
-
+@bot.message_handler(commands=["fire_exit"])
+def fire_exit(message: telebot.types.Message):
+    if message.from_user.id in ADMIN_LIST:
+        for user in ADMIN_LIST:
+            bot.send_message(user, "Запущена аварийная остановка бота!!!")
+        bot.stop_polling()
+        exit()
+            
 @bot.message_handler(commands=["start"])
 def start(message: telebot.types.Message):
     bot.send_message(
