@@ -591,32 +591,35 @@ class Database:
             else:
                 self.cursor.execute(command)
 
-        except sqlite3.Error as e:
+        except Exception as e:
             logging.error("Ошибка при выполнении запроса (executer): ", e)
+            return e
 
-        else:
-            result = self.cursor.fetchall()
-            self.connection.close()
-            return result
+        result = self.cursor.fetchall()
+        self.connection.close()
+        return result
 
     def create_table(self):
-        self.executer(
-            f"""CREATE TABLE IF NOT EXISTS {TABLE_NAME}
-            (id INTEGER PRIMARY KEY,
-            user_id INTEGER,
-            tts_limit INTEGER,
-            stt_limit INTEGER,
-            gpt_limit INTEGER,
-            gpt_chat TEXT,
-            ban INTEGER,
-            voice TEXT,
-            emotion TEXT,
-            speed TEXT,
-            debt INTEGER)
-            """
-        )
-        logging.info(f"Таблица {TABLE_NAME} создана")
-
+        try:
+            self.executer(
+                f"""CREATE TABLE IF NOT EXISTS {TABLE_NAME}
+                (id INTEGER PRIMARY KEY,
+                user_id INTEGER,
+                tts_limit INTEGER,
+                stt_limit INTEGER,
+                gpt_limit INTEGER,
+                gpt_chat TEXT,
+                ban INTEGER,
+                voice TEXT,
+                emotion TEXT,
+                speed TEXT,
+                debt INTEGER)
+                """
+            )
+            logging.info(f"Таблица {TABLE_NAME} создана")
+        except Exception as e:
+            logging.error("Ошибка при создании таблицы: ", e)
+            exit(1)
     def add_user(self, user_id: int, ban: int):
         """
         Adds a new user to the database.
