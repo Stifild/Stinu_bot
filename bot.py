@@ -55,7 +55,7 @@ def help(message):
 @bot.message_handler(commands=["tts"])
 def tts(message: telebot.types.Message):
     result: bool | tuple[bool, str] = sk.tts(message)
-    if result == True:
+    if result is bool:
         bot.send_message(message.chat.id, "Лови результат:")
         with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
             bot.send_audio(
@@ -96,7 +96,7 @@ def stt(message: telebot.types.Message):
         bot.send_message(message.chat.id, "Это не голос")
         return
     result: tuple[bool, str] = sk.stt(message, bot)
-    if result[0] == True:
+    if result[0]:
         bot.send_message(
             message.chat.id,
             result[1],
@@ -140,12 +140,11 @@ def menu(call):
             "Меню:",
             reply_markup=io.get_inline_keyboard(
                 (
-                    ("Выбрать голос", "voice"),
-                    ("Выбрать скорость", "speed"),
-                    ("Показать счет", "debt")
+                    (("Выбрать голос", "voice"),),
+                    (("Выбрать скорость", "speed"),),
+                    (("Показать счет", "debt"),)
                 )
-            ),
-        )
+        ))
     else:
         logging.error("Message is None")
 
@@ -173,9 +172,9 @@ def choose_voice(call):
     bot.register_next_step_handler(message, select_voice)
 
 
-def select_voice(message):
+def select_voice(message: telebot.types.Message):
     if message.text in io.list_voices():
-        io.db[str(message.from_user.id)]["voice"] = message.text
+        io.dbc.update_value(message.from_user.id, "voice", message.text)
         bot.send_message(
             message.chat.id,
             f'Теперь используется голос "{message.text}"',
@@ -208,7 +207,7 @@ def choose_emotion(call):
 
 def select_emotion(message):
     if message.text in io.list_emotions(message.from_user.id):
-        io.db[str(message.from_user.id)]["emotion"] = message.text
+        io.dbc.update_value(message.from_user.id, "emotion", message.text)
         bot.send_message(
             message.chat.id,
             f'Теперь используется эмоция "{message.text}"',
@@ -236,7 +235,7 @@ def choose_speed(call):
 
 def select_speed(message):
     if float(message.text) >= 0.1 and float(message.text) <= 3.0:
-        io.db[str(message.from_user.id)]["speed"] = message.text
+        io.dbc.update_value(message.from_user.id, "speed", int(message.text))
         bot.send_message(
             message.chat.id, f'Теперь используется скорость "{message.text}"'
         )
@@ -259,9 +258,39 @@ def logs(message: telebot.types.Message):
 def gptp(message: telebot.types.Message):
     if message.content_type == "voice":
         text: tuple[bool, str] = sk.stt(message, bot)
-        if text[0] == True:
+        if text[0]:
             answer = gpt.asking_gpt(message.from_user.id, text[1])
-            bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
+            bot.send_message(message.chat.id, answer)
+            result: bool | tuple[bool, str] = sk.tts(message)
+            if result is bool:
+                with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
+                    bot.send_audio(
+                        message.chat.id,
+                        file,
+                        reply_markup=telebot.util.quick_markup(
+                            {"Меню": {"callback_data": "menu"}}
+                        ),
+                    )
+                os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
+            elif not result[0]:
+                bot.send_message(
+                    message.chat.id,
+                    result[1],
+                    reply_markup=(
+                        telebot.util.quick_markup(
+                            {
+                                "Вики по кодам ошибок": {
+                                    "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                                },
+                                "Меню": {"callback_data": "menu"},
+                            },
+                            1,
+                        )
+                        if "кодом:" in result[1]
+                        else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
+                    ),
+                )
+            
         else:
             bot.send_message(
                 message.chat.id,
