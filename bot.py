@@ -138,15 +138,7 @@ def menu(call):
         bot.send_message(
             message.chat.id,
             "Меню:",
-            reply_markup=io.get_inline_keyboard(
-                (
-                    (("Выбрать голос", "voice"),),
-                    (("Выбрать скорость", "speed"),),
-                    (("Показать счет", "debt"),)
-                )
-        ))
-    else:
-        logging.error("Message is None")
+            reply_markup=io.get_inline_keyboard((("Выбрать голос", "voice"),("Выбрать скорость", "speed"),("Показать счет", "debt"),)))
 
 @bot.callback_query_handler(func=lambda call: call.data == "debt")
 def get_debt(call):
