@@ -236,7 +236,7 @@ class IOP:
 
 class SpeechKit(IOP):
 
-    def text_to_speech(self, text: str, id: str):
+    def text_to_speech(self, text: str, id: int):
         """
         Converts the given text to speech using the Yandex SpeechKit API.
 
@@ -346,7 +346,7 @@ class SpeechKit(IOP):
             and len(text) < 251
             and len(text) < int(self.db(id)["tts_limit"])
         ):
-            status, result = self.text_to_speech(text, str(id))
+            status, result = self.text_to_speech(text, id)
             if status:
                 with open(f"./data/temp/{str(id)}.ogg", "wb") as f:
                     f.write(result)
