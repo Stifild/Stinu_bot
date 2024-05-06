@@ -155,6 +155,23 @@ class IOP:
         else:
             return None
 
+    def read_json(self, file_path: str) -> dict:
+        """
+        Reads a JSON file and returns the data as a dictionary.
+        Args:
+            file_path (str): The path to the JSON file.
+        Returns:
+            dict: The data from the JSON file as a dictionary.
+        """
+        try:
+            with open(file_path, "r") as json_file:
+                data = json.load(json_file)
+                return data
+        except Exception as e:
+            logging.error("Не удалось выполнить запрос (IOP.read_json):", e)
+            return {}
+            
+        
     def list_voices(self) -> list[str]:
         """
         Lists available voices.
@@ -204,7 +221,7 @@ class IOP:
                 split_files.append(split_file_path)
         return split_files
 
-    def db(self, id: int):
+    def db(self, id: int) -> dict:
         """
         Retrieves user data from the database.
 
@@ -340,7 +357,7 @@ class SpeechKit(IOP):
                 return True
             else:
                 logging.warning(f"Проблема с запросом (SpeechKit.tts): {result}")
-                return (False, result)
+                return (False, str(result))
         else:
             logging.warning("Ошибка со стороны пользователя (SpeechKit.tts)")
             return (
@@ -354,7 +371,6 @@ class SpeechKit(IOP):
         db = self.db(message.from_user.id)
         duration = message.voice.duration
         id = message.from_user.id
-        text = ""
         stt_blocks_num = math.ceil(duration / 15)
         if db["stt_limit"] - stt_blocks_num >= 0:
             file_id = message.voice.file_id
@@ -382,7 +398,7 @@ class SpeechKit(IOP):
                 )
             else:
                 result = self.speech_to_text(file, id)
-                if result[0] == True:
+                if result[0]:
                     self.dbc.update_value(
                         id, "stt_limit", db["stt_limit"] - stt_blocks_num
                     )
@@ -449,7 +465,7 @@ class GPT(IOP):
     def ask_gpt(self, messages):
         iam_token = self.get_iam_token()
 
-        url = f"https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+        url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
         headers = {
             "Authorization": f"Bearer {iam_token}",
             "Content-Type": "application/json",
@@ -472,11 +488,11 @@ class GPT(IOP):
             response = requests.post(url, headers=headers, json=data)
 
         except Exception as e:
-            logging.ERROR("Произошла непредвиденная ошибка.", e)
+            logging.error("Произошла непредвиденная ошибка.", e)
 
         else:
             if response.status_code != 200:
-                logging.ERROR("Ошибка при получении ответа:", response.status_code)
+                logging.error("Ошибка при получении ответа:", response.status_code)
             else:
                 result = response.json()["result"]["alternatives"][0]["message"]["text"]
                 messages.append({"role": "assistant", "content": result})
@@ -484,7 +500,7 @@ class GPT(IOP):
                 return result
 
         with open(TOKENS_DATA_PATH, "r") as f:
-            logging.INFO(
+            logging.info(
                 "За всё время израсходовано:", json.load(f)["tokens_count"], "токенов"
             )
     
@@ -557,7 +573,7 @@ class Monetize(IOP):
     def speechkit_synt_rate(self, symbols: int) -> float:
         return float(symbols * (1320 / 1000000))
 
-    def cost_calculation(self, id: int, type: str) -> int:
+    def cost_calculation(self, id: int, type: str) -> float:
         user = self.db(id)
         if type == "gpt":
             return self.gpt_rate(GPT_LIMIT - user["gpt_limit"])
@@ -593,7 +609,6 @@ class Database:
 
         except Exception as e:
             logging.error("Ошибка при выполнении запроса (executer): ", e)
-            return e
 
         result = self.cursor.fetchall()
         self.connection.close()
@@ -677,36 +692,32 @@ class Database:
                 f"Возникла ошибка при обновлении значения {column} для пользователя {user_id}: {e}"
             )
 
-    def get_user_data(self, user_id: int):
-        """
-        Retrieves the data for a specific user from the database.
-
-        Args:
-            user_id (int): The ID of the user.
-
-        Returns:
-            dict: A dictionary containing the user data.
-        """
-        try:
-            result = self.executer(
-                f"SELECT * FROM {TABLE_NAME} WHERE user_id=?", (user_id,)
-            )
-            presult = {
-                "tts_limit": result[0][2],
-                "stt_limit": result[0][3],
-                "gpt_limit": result[0][4],
-                "gpt_chat": result[0][5],
-                "ban": result[0][6],
-                "voice": result[0][7],
-                "emotion": result[0][8],
-                "speed": result[0][9],
-                "debt": result[0][10],
-            }
-            return presult
-        except Exception as e:
-            logging.error(
-                f"Возникла ошибка при получении данных пользователя {user_id}: {e}"
-            )
+    def get_user_data(self, user_id: int) -> dict:
+            try:
+                result = self.executer(
+                    f"SELECT * FROM {TABLE_NAME} WHERE user_id=?", (user_id,)
+                )
+                if result:
+                    presult = {
+                        "tts_limit": result[0][2],
+                        "stt_limit": result[0][3],
+                        "gpt_limit": result[0][4],
+                        "gpt_chat": result[0][5],
+                        "ban": result[0][6],
+                        "voice": result[0][7],
+                        "emotion": result[0][8],
+                        "speed": result[0][9],
+                        "debt": result[0][10],
+                    }
+                    return presult
+                else:
+                    logging.error(f"Пользователь {user_id} не найден в базе данных вернулся пустой словарь")
+                    return {}
+            except Exception as e:
+                logging.error(
+                    f"Возникла ошибка при получении данных пользователя {user_id}: {e}"
+                )
+                return {}
 
     def get_all_users(
         self,
