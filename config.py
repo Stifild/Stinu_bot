@@ -22,7 +22,6 @@ MAX_USERS = 2
 IAM_TOKEN_ENDPOINT = (
     "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token"
 )
-TOKENS_DATA_PATH = "data/token_data.json"
 GPT_MODEL = "yandexgpt-lite"
 TEMPERATURE = 0.5
 IAM_TOKEN_PATH = "data/token_data.json"

@@ -46,14 +46,14 @@ class IOP:
             id (int): The ID of the user.
         """
         ids = [user[1] for user in self.dbc.get_all_users()]
-        if id not in ids and MAX_USERS < len(ids):
+        if id not in ids and MAX_USERS > len(ids):
             self.dbc.add_user(id, 0)
             return
-        elif id not in ids and MAX_USERS >= len(ids):
+        elif id not in ids:
             self.dbc.add_user(id, 1)
             return
         else:
-            return
+            logging.debug("Пользователь уже зарегистрирован")
 
     def get_iam_token(self) -> str:
         """
@@ -627,7 +627,7 @@ class Database:
                 ban INTEGER,
                 voice TEXT,
                 emotion TEXT,
-                speed TEXT,
+                speed INTEGER,
                 debt INTEGER)
                 """
             )
@@ -647,7 +647,7 @@ class Database:
             self.executer(
                 f"INSERT INTO {TABLE_NAME} "
                 f"(user_id, tts_limit, stt_limit, gpt_limit, ban, voice, emotion, speed) "
-                f"VALUES ({user_id}, {TTS_LIMIT}, {STT_LIMIT}, {GPT_LIMIT}, {ban}, 'zahar', 'neutral', 1);",
+                f"VALUES ({user_id}, {TTS_LIMIT}, {STT_LIMIT}, {GPT_LIMIT}, {ban}, 'zahar', 'neutral', 1);"
                 )
             logging.info(f"Добавлен пользователь {user_id}")
         except Exception as e:
