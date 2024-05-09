@@ -575,12 +575,15 @@ class Monetize(IOP):
 
     def cost_calculation(self, id: int, type: str) -> float:
         user = self.db(id)
+        gpt_limit: int = user.get("gpt_limit")
+        stt_limit: int = user.get("stt_limit")
+        tts_limit: int = user.get("tts_limit")
         if type == "gpt":
-            return self.gpt_rate(GPT_LIMIT - user["gpt_limit"])
+            return self.gpt_rate(GPT_LIMIT - gpt_limit)
         elif type == "stt":
-            return self.speechkit_recog_rate(STT_LIMIT - user["stt_limit"])
+            return self.speechkit_recog_rate(STT_LIMIT - stt_limit) if not STT_LIMIT - stt_limit else 0
         elif type == "tts":
-            return self.speechkit_synt_rate(TTS_LIMIT - user["tts_limit"])
+            return self.speechkit_synt_rate(TTS_LIMIT - tts_limit)
         else:
             Exception("Неверный тип технологии для вычесления стоймости")
     
