@@ -397,7 +397,7 @@ class SpeechKit(IOP):
                     "Фича в разработке а пока голосовые только до 30 секунд)",
                 )
             else:
-                result = self.speech_to_text(file, id)
+                result = self.speech_to_text(file, str(id))
                 if result[0]:
                     self.dbc.update_value(
                         id, "stt_limit", db["stt_limit"] - stt_blocks_num
@@ -602,7 +602,6 @@ class Database:
 
             if data:
                 self.cursor.execute(command, data)
-                self.connection.commit()
 
             else:
                 self.cursor.execute(command)
@@ -610,6 +609,7 @@ class Database:
         except Exception as e:
             logging.error("Ошибка при выполнении запроса (executer): ", e)
 
+        self.connection.commit()
         result = self.cursor.fetchall()
         self.connection.close()
         return result
@@ -628,7 +628,7 @@ class Database:
                 voice TEXT,
                 emotion TEXT,
                 speed INTEGER,
-                debt INTEGER)
+                debt INTEGER);
                 """
             )
             logging.info(f"Таблица {TABLE_NAME} создана")
@@ -647,7 +647,7 @@ class Database:
             self.executer(
                 f"INSERT INTO {TABLE_NAME} "
                 f"(user_id, tts_limit, stt_limit, gpt_limit, ban, voice, emotion, speed) "
-                f"VALUES ({user_id}, {TTS_LIMIT}, {STT_LIMIT}, {GPT_LIMIT}, {ban}, 'zahar', 'neutral', 1)"
+                f"VALUES ({user_id}, {TTS_LIMIT}, {STT_LIMIT}, {GPT_LIMIT}, {ban}, 'zahar', 'neutral', 1);"
                 )
             logging.info(f"Добавлен пользователь {user_id}")
         except Exception as e:
@@ -667,7 +667,7 @@ class Database:
         """
         try:
             result = self.executer(
-                f"SELECT user_id FROM {TABLE_NAME} WHERE user_id=?", (user_id,)
+                f"SELECT user_id FROM {TABLE_NAME} WHERE user_id=?;", (user_id,)
             )
             return bool(result)
         except Exception as e:
@@ -684,7 +684,7 @@ class Database:
         """
         try:
             self.executer(
-                f"UPDATE {TABLE_NAME} SET {column}=? WHERE user_id=?", (value, user_id)
+                f"UPDATE {TABLE_NAME} SET {column}=? WHERE user_id=?;", (value, user_id)
             )
             logging.info(f"Обновлено значение {column} для пользователя {user_id}")
         except Exception as e:
@@ -695,7 +695,7 @@ class Database:
     def get_user_data(self, user_id: int) -> dict:
             try:
                 result = self.executer(
-                    f"SELECT * FROM {TABLE_NAME} WHERE user_id=?", (user_id,)
+                    f"SELECT * FROM {TABLE_NAME} WHERE user_id=?;", (user_id,)
                 )
                 if result:
                     presult = {
@@ -729,7 +729,7 @@ class Database:
             list[tuple[int, int, int, int, int, str, int, str, str, str]]: A list of tuples containing the user data.
         """
         try:
-            result = self.executer(f"SELECT * FROM {TABLE_NAME}")
+            result = self.executer(f"SELECT * FROM {TABLE_NAME};")
             return result
         except Exception as e:
             logging.error(
@@ -744,7 +744,7 @@ class Database:
             user_id (int): The ID of the user.
         """
         try:
-            self.executer(f"DELETE FROM {TABLE_NAME} WHERE user_id=?", (user_id,))
+            self.executer(f"DELETE FROM {TABLE_NAME} WHERE user_id=?;", (user_id,))
             logging.warning(f"Удален пользователь {user_id}")
         except Exception as e:
             logging.error(f"Возникла ошибка при удалении пользователя {user_id}: {e}")
