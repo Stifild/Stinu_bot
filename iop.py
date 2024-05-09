@@ -221,7 +221,7 @@ class IOP:
                 split_files.append(split_file_path)
         return split_files
 
-    def db(self, id: int) -> dict:
+    def db(self, id: int) -> dict[str, str | int]:
         """
         Retrieves user data from the database.
 
@@ -575,9 +575,9 @@ class Monetize(IOP):
 
     def cost_calculation(self, id: int, type: str) -> float:
         user = self.db(id)
-        gpt_limit: int = user.get("gpt_limit")
-        stt_limit: int = user.get("stt_limit")
-        tts_limit: int = user.get("tts_limit")
+        gpt_limit = user.get("gpt_limit")
+        stt_limit = user.get("stt_limit")
+        tts_limit = user.get("tts_limit")
         if type == "gpt":
             return self.gpt_rate(GPT_LIMIT - gpt_limit)
         elif type == "stt":
@@ -649,8 +649,8 @@ class Database:
         try:
             self.executer(
                 f"INSERT INTO {TABLE_NAME} "
-                f"(user_id, tts_limit, stt_limit, gpt_limit, ban, voice, emotion, speed) "
-                f"VALUES ({user_id}, {TTS_LIMIT}, {STT_LIMIT}, {GPT_LIMIT}, {ban}, 'zahar', 'neutral', 1);"
+                f"(user_id, tts_limit, stt_limit, gpt_limit, ban, voice, emotion, speed, gpt_chat) "
+                f"VALUES ({user_id}, {TTS_LIMIT}, {STT_LIMIT}, {GPT_LIMIT}, {ban}, 'zahar', 'neutral', 1, "");"
                 )
             logging.info(f"Добавлен пользователь {user_id}")
         except Exception as e:
