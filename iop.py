@@ -610,7 +610,7 @@ class Database:
                 self.cursor.execute(command)
 
         except Exception as e:
-            logging.error("Ошибка при выполнении запроса (executer): ", e)
+            logging.error(f"Ошибка при выполнении запроса (executer): {e}")
 
         self.connection.commit()
         result = self.cursor.fetchall()
