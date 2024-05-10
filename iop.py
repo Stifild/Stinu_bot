@@ -702,15 +702,15 @@ class Database:
                 )
                 if result:
                     presult = {
-                        "tts_limit": result[0][2],
-                        "stt_limit": result[0][3],
-                        "gpt_limit": result[0][4],
-                        "gpt_chat": result[0][5],
-                        "ban": result[0][6],
-                        "voice": result[0][7],
-                        "emotion": result[0][8],
-                        "speed": result[0][9],
-                        "debt": result[0][10],
+                        "tts_limit": int(result[0][2]),
+                        "stt_limit": int(result[0][3]),
+                        "gpt_limit": int(result[0][4]),
+                        "gpt_chat": str(result[0][5]),
+                        "ban": bool(result[0][6]),
+                        "voice": str(result[0][7]),
+                        "emotion": str(result[0][8]),
+                        "speed": int(result[0][9]),
+                        "debt": int(result[0][10]),
                     }
                     return presult
                 else:
