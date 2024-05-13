@@ -162,7 +162,7 @@ def get_debt(call):
         call.message if call.message else call.callback_query.message
     )
     update_debts(message)
-    id = message.from_user.id
+    id = message.chat.id
     stt = mt.cost_calculation(id, 'stt')
     tts = mt.cost_calculation(id, 'tts')
     gpt = mt.cost_calculation(id, 'gpt')
