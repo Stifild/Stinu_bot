@@ -273,7 +273,7 @@ def gptp(message: telebot.types.Message):
             answer = gpt.asking_gpt(message.from_user.id, text[1])
             bot.send_message(message.chat.id, answer)
             result: bool | tuple[bool, str] = sk.tts(answer, 1, message.from_user.id)
-            if result is bool:
+            if result is not bool:
                 with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
                     bot.send_audio(
                         message.chat.id,
