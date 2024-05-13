@@ -163,10 +163,10 @@ def get_debt(call):
     )
     update_debts(message)
     id = message.chat.id
-    stt = mt.cost_calculation(id, 'stt')
-    tts = mt.cost_calculation(id, 'tts')
-    gpt = mt.cost_calculation(id, 'gpt')
-    all = stt + tts + gpt
+    stt = round(mt.cost_calculation(id, 'stt'), 2)
+    tts = round(mt.cost_calculation(id, 'tts'), 2)
+    gpt = round(mt.cost_calculation(id, 'gpt'), 2)
+    all = round(mt.cost_calculation(id, 'stt') + mt.cost_calculation(id, 'tts') + mt.cost_calculation(id, 'gpt'), 2)
     bot.send_message(id,
                      f"Вот твой счет:\n\nЗа использование Speech to text: {stt}\nЗа использование Text to speech: {tts}"
                      f"\nЗа использование YaGPT: {gpt}\n **В Итоге:** {all}", parse_mode="Markdown")
