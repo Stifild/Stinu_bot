@@ -270,11 +270,14 @@ def gptp(message: telebot.types.Message):
     if message.content_type == "voice":
         text: tuple[bool, str] = sk.stt(message, bot)
         if text[0]:
+            bot.send_chat_action(message.chat.id, "typing")
             answer = gpt.asking_gpt(message.from_user.id, text[1])
             bot.send_message(message.chat.id, answer)
+            bot.send_chat_action(message.chat.id, "record_voice")
             result: bool | tuple[bool, str] = sk.tts(answer, 1, message.from_user.id)
             if result is not bool:
                 try:
+                    bot.send_chat_action(message.chat.id, "upload_voice")
                     with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
                         bot.send_audio(
                             message.chat.id,
