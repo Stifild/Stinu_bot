@@ -1,7 +1,8 @@
 import telebot, logging, os
 from config import LOGS_PATH, TELEGRAM_TOKEN, ADMIN_LIST
-from iop import IOP, SpeechKit, GPT, Monetize
+from iop import IOP, SpeechKit, GPT, Monetize, Database
 
+db = Database()
 io = IOP()
 sk = SpeechKit()
 gpt = GPT()
@@ -143,7 +144,16 @@ def menu(call):
             message.chat.id,
             "Меню:",
             reply_markup=io.get_inline_keyboard(
-                (("Выбрать голос", "voice"), ("Выбрать скорость", "speed"), ("Показать счет", "debt"))))
+                (("Выбрать голос", "voice"), ("Выбрать скорость", "speed"), ("Показать счет", "debt"),
+                 ("Отчистить историю чата", "clear"))))
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "clear")
+def clear_history(call):
+    message: telebot.types.Message = (
+        call.message if call.message else call.callback_query.message
+    )
+    db.update_value(message.from_user.id, "gpt_chat", "")
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "debt")
