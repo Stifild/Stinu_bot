@@ -143,7 +143,7 @@ def menu(call):
             message.chat.id,
             "Меню:",
             reply_markup=io.get_inline_keyboard(
-                (("Выбрать голос", "voice"), ("Выбрать скорость", "speed"), ("Показать счет", "debt"),)))
+                (("Выбрать голос", "voice"), ("Выбрать скорость", "speed"), ("Показать счет", "debt"))))
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "debt")

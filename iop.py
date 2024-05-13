@@ -114,7 +114,7 @@ class IOP:
                 logging.info("Токен не получен (IOP.create_new_iam_token)")
     
     def get_inline_keyboard(
-        self, values: tuple[tuple[str, str]]
+        self, values: tuple[tuple[str, str],...]
     ) -> telebot.types.InlineKeyboardMarkup:
         """
         Creates an inline keyboard markup.
@@ -417,6 +417,7 @@ class SpeechKit(IOP):
 class GPT(IOP):
 
     def __init__(self):
+        super().__init__()
         self.dbc = Database()
         self.max_tokens = GPT_LIMIT
         self.temperature = TEMPERATURE
