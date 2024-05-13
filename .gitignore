@@ -133,6 +133,7 @@ DONT_DELETE_ME.json
 *.db
 *.ogg
 .vscode
+.replit
 
 # Spyder project settings
 .spyderproject
