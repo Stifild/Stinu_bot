@@ -17,6 +17,7 @@ logging.basicConfig(
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
+
 @bot.message_handler(commands=["fire_exit"])
 def fire_exit(message: telebot.types.Message):
     if message.from_user.id in ADMIN_LIST:
@@ -24,7 +25,8 @@ def fire_exit(message: telebot.types.Message):
             bot.send_message(user, "Запущена аварийная остановка бота!!!")
         bot.stop_polling()
         exit()
-            
+
+
 @bot.message_handler(commands=["start"])
 def start(message: telebot.types.Message):
     bot.send_message(
@@ -49,7 +51,6 @@ def help(message):
             )
         ),
     )
-
 
 
 @bot.message_handler(commands=["tts"])
@@ -91,6 +92,7 @@ def stt_notification(message: telebot.types.Message):
     bot.send_message(message.chat.id, "Присылай голос")
     bot.register_next_step_handler(message, stt)
 
+
 def stt(message: telebot.types.Message):
     if message.content_type != "voice":
         bot.send_message(message.chat.id, "Это не голос")
@@ -121,9 +123,11 @@ def stt(message: telebot.types.Message):
             ),
         )
 
+
 @bot.message_handler(commands=['/debt'])
-def update_debts(message:telebot.types.Message):
+def update_debts(message: telebot.types.Message):
     mt.update_debts()
+
 
 @bot.callback_query_handler(func=lambda call: call.data == "menu")
 @bot.message_handler(commands=["menu"])
@@ -138,7 +142,9 @@ def menu(call):
         bot.send_message(
             message.chat.id,
             "Меню:",
-            reply_markup=io.get_inline_keyboard((("Выбрать голос", "voice"),("Выбрать скорость", "speed"),("Показать счет", "debt"),)))
+            reply_markup=io.get_inline_keyboard(
+                (("Выбрать голос", "voice"), ("Выбрать скорость", "speed"), ("Показать счет", "debt"),)))
+
 
 @bot.callback_query_handler(func=lambda call: call.data == "debt")
 def get_debt(call):
@@ -147,8 +153,10 @@ def get_debt(call):
     )
     update_debts(message)
     id = message.from_user.id
-    bot.send_message(id, f"Вот твой счет:\n\nЗа использование Speech to text: {mt.cost_calculation(id, 'stt')}\nЗа использование Text to speech: {mt.cost_calculation(id, 'tts')}\nЗа использование YaGPT: {mt.cost_calculation(id, 'gpt')}\n **В Итоге:** {io.db(id)['debt']}")
+    bot.send_message(id,
+                     f"Вот твой счет:\n\nЗа использование Speech to text: {mt.cost_calculation(id, 'stt')}\nЗа использование Text to speech: {mt.cost_calculation(id, 'tts')}\nЗа использование YaGPT: {mt.cost_calculation(id, 'gpt')}\n **В Итоге:** {io.db(id)['debt']}")
     menu(message)
+
 
 @bot.callback_query_handler(func=lambda call: call.data == "voice")
 def choose_voice(call):
@@ -246,6 +254,7 @@ def logs(message: telebot.types.Message):
             else None
         )
 
+
 @bot.message_handler(content_types=["voice", "text"])
 def gptp(message: telebot.types.Message):
     if message.content_type == "voice":
@@ -282,7 +291,7 @@ def gptp(message: telebot.types.Message):
                         else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
                     ),
                 )
-            
+
         else:
             bot.send_message(
                 message.chat.id,
@@ -303,7 +312,8 @@ def gptp(message: telebot.types.Message):
             )
     else:
         answer = gpt.asking_gpt(message.from_user.id, message.text)
-        bot.send_message(message.chat.id, answer, reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
+        bot.send_message(message.chat.id, answer,
+                         reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
 
 
 bot.infinity_polling()
