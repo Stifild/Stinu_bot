@@ -582,7 +582,7 @@ class Monetize(IOP):
         if type == "gpt":
             return self.gpt_rate(GPT_LIMIT - gpt_limit)
         elif type == "stt":
-            return self.speechkit_recog_rate(int(STT_LIMIT) - int(stt_limit))
+            return self.speechkit_recog_rate(int(STT_LIMIT) - stt_limit)
         elif type == "tts":
             return self.speechkit_synt_rate(TTS_LIMIT - tts_limit)
         else:
