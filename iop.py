@@ -576,9 +576,9 @@ class Monetize(IOP):
 
     def cost_calculation(self, idp: int, typed: str) -> float:
         user = self.db(idp)
-        gpt_limit = GPT_LIMIT - user.get("gpt_limit")
-        stt_limit = STT_LIMIT - user.get("stt_limit")
-        tts_limit = TTS_LIMIT - user.get("tts_limit")
+        gpt_limit = GPT_LIMIT - int(user.get("gpt_limit")) if user.get("gpt_limit") else 0
+        stt_limit = STT_LIMIT - int(user.get("stt_limit")) if user.get("stt_limit") else 0
+        tts_limit = TTS_LIMIT - int(user.get("tts_limit")) if user.get("tts_limit") else 0
         if typed == "gpt":
             return self.gpt_rate(gpt_limit)
         elif typed == "stt":
