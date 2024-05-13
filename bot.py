@@ -274,15 +274,20 @@ def gptp(message: telebot.types.Message):
             bot.send_message(message.chat.id, answer)
             result: bool | tuple[bool, str] = sk.tts(answer, 1, message.from_user.id)
             if result is not bool:
-                with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
-                    bot.send_audio(
-                        message.chat.id,
-                        file,
-                        reply_markup=telebot.util.quick_markup(
-                            {"Меню": {"callback_data": "menu"}}
-                        ),
-                    )
-                os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
+                try:
+                    with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
+                        bot.send_audio(
+                            message.chat.id,
+                            file,
+                            reply_markup=telebot.util.quick_markup(
+                                {"Меню": {"callback_data": "menu"}}
+                            ),
+                        )
+                        os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
+                except Exception as e:
+                    logging.warning(f"Ошибка при отправке голосового сообщения: {e}")
+                    bot.send_message(message.chat.id, f"При отправке голосового сообщения произошла ошибка: {e}")
+
             elif not result[0]:
                 bot.send_message(
                     message.chat.id,
