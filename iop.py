@@ -574,19 +574,19 @@ class Monetize(IOP):
     def speechkit_synt_rate(self, symbols: int) -> float:
         return float(symbols * (1320 / 1000000))
 
-    def cost_calculation(self, id: int, type: str) -> float:
-        user = self.db(id)
-        gpt_limit = user.get("gpt_limit")
-        stt_limit = user.get("stt_limit")
-        tts_limit = user.get("tts_limit")
-        if type == "gpt":
-            return self.gpt_rate(GPT_LIMIT - gpt_limit)
-        elif type == "stt":
-            return self.speechkit_recog_rate(int(STT_LIMIT) - stt_limit)
-        elif type == "tts":
-            return self.speechkit_synt_rate(TTS_LIMIT - tts_limit)
+    def cost_calculation(self, idp: int, typed: str) -> float:
+        user = self.db(idp)
+        gpt_limit = GPT_LIMIT - user.get("gpt_limit")
+        stt_limit = STT_LIMIT - user.get("stt_limit")
+        tts_limit = TTS_LIMIT - user.get("tts_limit")
+        if typed == "gpt":
+            return self.gpt_rate(gpt_limit)
+        elif typed == "stt":
+            return self.speechkit_recog_rate(stt_limit)
+        elif typed == "tts":
+            return self.speechkit_synt_rate(tts_limit)
         else:
-            Exception("Неверный тип технологии для вычесления стоймости")
+            Exception("Неверный тип технологии для вычисления стоймости")
     
     def update_debts(self):
         ids = [user[1] for user in self.dbc.get_all_users()]
