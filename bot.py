@@ -163,8 +163,13 @@ def get_debt(call):
     )
     update_debts(message)
     id = message.from_user.id
+    stt = mt.cost_calculation(id, 'stt')
+    tts = mt.cost_calculation(id, 'tts')
+    gpt = mt.cost_calculation(id, 'gpt')
+    all = stt + tts + gpt
     bot.send_message(id,
-                     f"Вот твой счет:\n\nЗа использование Speech to text: {mt.cost_calculation(id, 'stt')}\nЗа использование Text to speech: {mt.cost_calculation(id, 'tts')}\nЗа использование YaGPT: {mt.cost_calculation(id, 'gpt')}\n **В Итоге:** {db.get_user_data(id)['debt']}")
+                     f"Вот твой счет:\n\nЗа использование Speech to text: {stt}\nЗа использование Text to speech: {tts}"
+                     f"\nЗа использование YaGPT: {gpt}\n **В Итоге:** {all}")
     menu(message)
 
 
