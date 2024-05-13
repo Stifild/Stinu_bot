@@ -328,30 +328,30 @@ class SpeechKit(IOP):
                 f'При запросе в SpeechKit возникла ошибка с кодом: {decoded_data.get("error_code")}',
             )
 
-    def tts(self, message: telebot.types.Message) -> bool | tuple[bool, str]:
+    def tts(self, message: telebot.types.Message | str, mode: int = 0, id: int = 0) -> bool | tuple[bool, str]:
         """
         Converts text to speech.
 
         Args:
             message (telebot.types.Message): The message containing the text to be converted.
-
+            mode (int): The mode of the conversion. If mode is 1, the text will be converted to speech.
+            id (int): The ID associated with the audio file.
         Returns:
             bool or tuple[bool, str]: True if the conversion is successful, otherwise a tuple
             containing False and an error message.
         """
-        text = telebot.util.extract_arguments(message.text)
-        id = message.from_user.id
+        text = telebot.util.extract_arguments(message.text) if mode == 0 else message
+        idp = message.from_user.id if mode == 0 else id
         if (
-            len(text) > 2
-            and len(text) < 251
-            and len(text) < int(self.db(id)["tts_limit"])
+            2 < len(text) < 251
+                and len(text) < int(self.db(idp)["tts_limit"])
         ):
-            status, result = self.text_to_speech(text, id)
+            status, result = self.text_to_speech(text, idp)
             if status:
-                with open(f"./data/temp/{str(id)}.ogg", "wb") as f:
+                with open(f"./data/temp/{str(idp)}.ogg", "wb") as f:
                     f.write(result)
                 self.dbc.update_value(
-                    id, "tts_limit", int(self.db(id)["tts_limit"]) - len(text)
+                    idp, "tts_limit", int(self.db(idp)["tts_limit"]) - len(text)
                 )
                 logging.info("Успешная генерация (SpeechKit.tts)")
                 return True
@@ -362,7 +362,7 @@ class SpeechKit(IOP):
             logging.warning("Ошибка со стороны пользователя (SpeechKit.tts)")
             return (
                 False,
-                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(id)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
+                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(idp)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
             )
 
     def stt(
