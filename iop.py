@@ -508,7 +508,7 @@ class GPT(IOP):
     def asking_gpt(self, user_id: int, task: str | None = None) -> str:
         try:
             message = json.loads(self.db(user_id)["gpt_chat"])
-        except TypeError:
+        except Exception as e:
             message = []
         if task:
             message.append({"role": "user", "content": task})
