@@ -169,7 +169,7 @@ def get_debt(call):
     all = stt + tts + gpt
     bot.send_message(id,
                      f"Вот твой счет:\n\nЗа использование Speech to text: {stt}\nЗа использование Text to speech: {tts}"
-                     f"\nЗа использование YaGPT: {gpt}\n **В Итоге:** {all}")
+                     f"\nЗа использование YaGPT: {gpt}\n **В Итоге:** {all}", parse_mode="Markdown")
     menu(message)
 
 
