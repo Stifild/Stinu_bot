@@ -329,6 +329,7 @@ def gptp(message: telebot.types.Message):
                 ),
             )
     else:
+        bot.send_chat_action(message.chat.id, "typing")
         answer = gpt.asking_gpt(message.from_user.id, message.text)
         bot.send_message(message.chat.id, answer,
                          reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
