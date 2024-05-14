@@ -283,7 +283,7 @@ def gptp(message: telebot.types.Message):
             bot.send_message(message.chat.id, answer)
             bot.send_chat_action(message.chat.id, "record_voice")
             result: bool | tuple[bool, str] = sk.tts(answer, 1, message.from_user.id)
-            if result is not bool:
+            if result is not tuple:
                 try:
                     bot.send_chat_action(message.chat.id, "upload_voice")
                     with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
@@ -299,7 +299,7 @@ def gptp(message: telebot.types.Message):
                     logging.warning(f"Ошибка при отправке голосового сообщения: {e}")
                     bot.send_message(message.chat.id, f"При отправке голосового сообщения произошла ошибка: {e}")
 
-            elif not result[0]:
+            else:
                 bot.send_message(
                     message.chat.id,
                     result[1],
