@@ -566,13 +566,13 @@ class GPT(IOP):
 
 class Monetize(IOP):
     def gpt_rate(self, tokens: int) -> float:
-        return tokens * (0.20 / 1000) / 0.03
+        return tokens * (0.20 / 1000)
 
     def speechkit_recog_rate(self, blocks: int) -> float:
-        return blocks * 0.16 / 0.03
+        return blocks * 0.16
 
     def speechkit_synt_rate(self, symbols: int) -> float:
-        return float(symbols * (1320 / 1000000))/0.03
+        return float(symbols * (1320 / 1000000))
 
     def cost_calculation(self, idp: int, typed: str) -> float:
         user = self.db(idp)
