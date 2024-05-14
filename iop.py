@@ -344,7 +344,6 @@ class SpeechKit(IOP):
         idp = message.from_user.id if mode == 0 else id
         if (
             2 < len(text) < 251
-                and len(text) < int(self.db(idp)["tts_limit"])
         ):
             status, result = self.text_to_speech(text, idp)
             if status:
@@ -362,7 +361,7 @@ class SpeechKit(IOP):
             logging.warning("Ошибка со стороны пользователя (SpeechKit.tts)")
             return (
                 False,
-                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(idp)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
+                f"Проблема с запросом. {'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
             )
 
     def stt(
