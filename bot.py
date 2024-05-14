@@ -18,7 +18,8 @@ logging.basicConfig(
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
-
+def is_ban(id):
+    return db.get_user_data(id).get("ban")
 @bot.message_handler(commands=["fire_exit"])
 def fire_exit(message: telebot.types.Message):
     if message.from_user.id in ADMIN_LIST:
@@ -56,76 +57,79 @@ def help(message):
 
 @bot.message_handler(commands=["tts"])
 def tts(message: telebot.types.Message):
-    bot.send_chat_action(message.chat.id, "record_voice")
-    result: bool | tuple[bool, str] = sk.tts(message)
-    if result == True:
-        bot.send_message(message.chat.id, "Лови результат:")
+    if not is_ban(message.from_user.id):
+        bot.send_chat_action(message.chat.id, "record_voice")
+        result: bool | tuple[bool, str] = sk.tts(message)
+        if result == True:
+            bot.send_message(message.chat.id, "Лови результат:")
 
-        with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
-            bot.send_chat_action(message.chat.id, "upload_voice")
-            bot.send_audio(
+            with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
+                bot.send_chat_action(message.chat.id, "upload_voice")
+                bot.send_audio(
+                    message.chat.id,
+                    file,
+                    reply_markup=telebot.util.quick_markup(
+                        {"Меню": {"callback_data": "menu"}}
+                    ),
+                )
+            os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
+        elif not result[0]:
+            bot.send_message(
                 message.chat.id,
-                file,
-                reply_markup=telebot.util.quick_markup(
-                    {"Меню": {"callback_data": "menu"}}
+                result[1],
+                reply_markup=(
+                    telebot.util.quick_markup(
+                        {
+                            "Вики по кодам ошибок": {
+                                "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                            },
+                            "Меню": {"callback_data": "menu"},
+                        },
+                        1,
+                    )
+                    if "кодом:" in result[1]
+                    else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
                 ),
             )
-        os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
-    elif not result[0]:
-        bot.send_message(
-            message.chat.id,
-            result[1],
-            reply_markup=(
-                telebot.util.quick_markup(
-                    {
-                        "Вики по кодам ошибок": {
-                            "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
-                        },
-                        "Меню": {"callback_data": "menu"},
-                    },
-                    1,
-                )
-                if "кодом:" in result[1]
-                else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
-            ),
-        )
 
 
 @bot.message_handler(commands=["stt"])
 def stt_notification(message: telebot.types.Message):
-    bot.send_message(message.chat.id, "Присылай голос")
-    bot.register_next_step_handler(message, stt)
+    if not is_ban(message.from_user.id):
+        bot.send_message(message.chat.id, "Присылай голос")
+        bot.register_next_step_handler(message, stt)
 
 
 def stt(message: telebot.types.Message):
-    if message.content_type != "voice":
-        bot.send_message(message.chat.id, "Это не голос")
-        return
-    result: tuple[bool, str] = sk.stt(message, bot)
-    if result[0]:
-        bot.send_message(
-            message.chat.id,
-            result[1],
-            reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}),
-        )
-    elif not result[0]:
-        bot.send_message(
-            message.chat.id,
-            result[1],
-            reply_markup=(
-                telebot.util.quick_markup(
-                    {
-                        "Вики по кодам ошибок": {
-                            "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+    if not is_ban(message.from_user.id):
+        if message.content_type != "voice":
+            bot.send_message(message.chat.id, "Это не голос")
+            return
+        result: tuple[bool, str] = sk.stt(message, bot)
+        if result[0]:
+            bot.send_message(
+                message.chat.id,
+                result[1],
+                reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}),
+            )
+        elif not result[0]:
+            bot.send_message(
+                message.chat.id,
+                result[1],
+                reply_markup=(
+                    telebot.util.quick_markup(
+                        {
+                            "Вики по кодам ошибок": {
+                                "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                            },
+                            "Меню": {"callback_data": "menu"},
                         },
-                        "Меню": {"callback_data": "menu"},
-                    },
-                    1,
-                )
-                if "кодом:" in result[1]
-                else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
-            ),
-        )
+                        1,
+                    )
+                    if "кодом:" in result[1]
+                    else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
+                ),
+            )
 
 
 @bot.message_handler(commands=['debt'])
@@ -156,7 +160,8 @@ def clear_history(call):
     message: telebot.types.Message = (
         call.message if call.message else call.callback_query.message
     )
-    db.update_value(message.from_user.id, "gpt_chat", "")
+    db.update_value(message.from_user.id, "gpt_chat", "[]")
+    bot.send_message(message.chat.id, "История чата очищена")
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "debt")
@@ -195,7 +200,7 @@ def select_voice(message: telebot.types.Message):
         io.dbc.update_value(message.from_user.id, "voice", message.text)
         bot.send_message(
             message.chat.id,
-            f'Теперь используется голос "{message.text}"',
+            f'Теперь используется голос "{message.text}"\n\nВо избежание ошибок перевыберите эмоцию',
             reply_markup=telebot.util.quick_markup(
                 {"Выбрать эмоцию": {"callback_data": "emotion"}}
             ),
@@ -275,34 +280,54 @@ def logs(message: telebot.types.Message):
 
 @bot.message_handler(content_types=["voice", "text"])
 def gptp(message: telebot.types.Message):
-    if message.content_type == "voice":
-        text: tuple[bool, str] = sk.stt(message, bot)
-        if text[0]:
-            bot.send_chat_action(message.chat.id, "typing")
-            answer = gpt.asking_gpt(message.from_user.id, text[1], 1)
-            bot.send_message(message.chat.id, answer)
-            bot.send_chat_action(message.chat.id, "record_voice")
-            result: bool | tuple[bool, str] = sk.tts(answer, 1, message.from_user.id)
-            if result == True:
-                try:
-                    bot.send_chat_action(message.chat.id, "upload_voice")
-                    with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
-                        bot.send_audio(
-                            message.chat.id,
-                            file,
-                            reply_markup=telebot.util.quick_markup(
-                                {"Меню": {"callback_data": "menu"}}
-                            ),
-                        )
-                        os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
-                except Exception as e:
-                    logging.warning(f"Ошибка при отправке голосового сообщения: {e}")
-                    bot.send_message(message.chat.id, f"При отправке голосового сообщения произошла ошибка: {e}")
+    if not is_ban(message.from_user.id):
+        if message.content_type == "voice":
+            text: tuple[bool, str] = sk.stt(message, bot)
+            if text[0]:
+                bot.send_chat_action(message.chat.id, "typing")
+                answer = gpt.asking_gpt(message.from_user.id, text[1], 1)
+                bot.send_message(message.chat.id, answer, parse_mode="Markdown")
+                bot.send_chat_action(message.chat.id, "record_voice")
+                result: bool | tuple[bool, str] = sk.tts(answer, 1, message.from_user.id)
+                if result == True:
+                    try:
+                        bot.send_chat_action(message.chat.id, "upload_voice")
+                        with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
+                            bot.send_audio(
+                                message.chat.id,
+                                file,
+                                reply_markup=telebot.util.quick_markup(
+                                    {"Меню": {"callback_data": "menu"}}
+                                ),
+                            )
+                            os.remove(f"./data/temp/{str(message.from_user.id)}.ogg")
+                    except Exception as e:
+                        logging.warning(f"Ошибка при отправке голосового сообщения: {e}")
+                        bot.send_message(message.chat.id, f"При отправке голосового сообщения произошла ошибка: {e}")
+
+                else:
+                    bot.send_message(
+                        message.chat.id,
+                        result[1],
+                        reply_markup=(
+                            telebot.util.quick_markup(
+                                {
+                                    "Вики по кодам ошибок": {
+                                        "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
+                                    },
+                                    "Меню": {"callback_data": "menu"},
+                                },
+                                1,
+                            )
+                            if "кодом:" in result[1]
+                            else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
+                        ),
+                    )
 
             else:
                 bot.send_message(
                     message.chat.id,
-                    result[1],
+                    text[1],
                     reply_markup=(
                         telebot.util.quick_markup(
                             {
@@ -313,34 +338,16 @@ def gptp(message: telebot.types.Message):
                             },
                             1,
                         )
-                        if "кодом:" in result[1]
+                        if "кодом:" in text[1]
                         else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
                     ),
                 )
-
         else:
-            bot.send_message(
-                message.chat.id,
-                text[1],
-                reply_markup=(
-                    telebot.util.quick_markup(
-                        {
-                            "Вики по кодам ошибок": {
-                                "url": "https://ru.wikipedia.org/wiki/Список_кодов_состояния_HTTP#Обзорный_список"
-                            },
-                            "Меню": {"callback_data": "menu"},
-                        },
-                        1,
-                    )
-                    if "кодом:" in text[1]
-                    else telebot.util.quick_markup({"Меню": {"callback_data": "menu"}})
-                ),
-            )
-    else:
-        bot.send_chat_action(message.chat.id, "typing")
-        answer = gpt.asking_gpt(message.from_user.id, message.text)
-        bot.send_message(message.chat.id, answer,
-                         reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}))
+            bot.send_chat_action(message.chat.id, "typing")
+            answer = gpt.asking_gpt(message.from_user.id, message.text)
+            bot.send_message(message.chat.id, answer,
+                             reply_markup=telebot.util.quick_markup({"Меню": {"callback_data": "menu"}}),
+                             parse_mode="Markdown")
 
 
 bot.infinity_polling()
