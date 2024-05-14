@@ -160,6 +160,7 @@ def clear_history(call):
     message: telebot.types.Message = (
         call.message if call.message else call.callback_query.message
     )
+    bot.delete_message(message.chat.id, message.message_id)
     db.update_value(message.from_user.id, "gpt_chat", "[]")
     bot.send_message(message.chat.id, "История чата очищена")
 
