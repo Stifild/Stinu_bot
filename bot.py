@@ -169,6 +169,7 @@ def get_debt(call):
     message: telebot.types.Message = (
         call.message if call.message else call.callback_query.message
     )
+    bot.delete_message(message.chat.id, message.message_id)
     update_debts(message)
     id = message.chat.id
     stt = round(mt.cost_calculation(id, 'stt'), 2)
