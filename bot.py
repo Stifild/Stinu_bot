@@ -58,7 +58,7 @@ def help(message):
 def tts(message: telebot.types.Message):
     bot.send_chat_action(message.chat.id, "record_voice")
     result: bool | tuple[bool, str] = sk.tts(message)
-    if result is not bool:
+    if result == True:
         bot.send_message(message.chat.id, "Лови результат:")
 
         with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
@@ -283,7 +283,7 @@ def gptp(message: telebot.types.Message):
             bot.send_message(message.chat.id, answer)
             bot.send_chat_action(message.chat.id, "record_voice")
             result: bool | tuple[bool, str] = sk.tts(answer, 1, message.from_user.id)
-            if result is not tuple:
+            if result == True:
                 try:
                     bot.send_chat_action(message.chat.id, "upload_voice")
                     with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
