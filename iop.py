@@ -344,7 +344,6 @@ class SpeechKit(IOP):
         idp = message.from_user.id if mode == 0 else id
         if (
             2 < len(text) < 251
-                and len(text) < int(self.db(idp)["tts_limit"])
         ):
             status, result = self.text_to_speech(text, idp)
             if status:
@@ -362,7 +361,7 @@ class SpeechKit(IOP):
             logging.warning("Ошибка со стороны пользователя (SpeechKit.tts)")
             return (
                 False,
-                f"Проблема с запросом. {'У вас закончился лимит' if len(text) > int(self.db(idp)['tts_limit']) else 'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
+                f"Проблема с запросом. {'Cлишком длинный текст' if len(text) > 250 else 'Слишком короткий текст'}",
             )
 
     def stt(
@@ -463,9 +462,9 @@ class GPT(IOP):
         with open(self.tokens_data_path, "w") as token_file:
             json.dump({"tokens_count": tokens_count}, token_file)
 
-    def ask_gpt(self, messages):
+    def ask_gpt(self, messages, max_tokens):
         iam_token = self.get_iam_token()
-
+        max_tokens = self.max_tokens if max_tokens is None else max_tokens
         url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
         headers = {
             "Authorization": f"Bearer {iam_token}",
@@ -477,7 +476,7 @@ class GPT(IOP):
             "completionOptions": {
                 "stream": False,
                 "temperature": self.temperature,
-                "maxTokens": self.max_tokens,
+                "maxTokens": max_tokens,
             },
             "messages": [],
         }
@@ -502,17 +501,17 @@ class GPT(IOP):
 
         with open(TOKENS_DATA_PATH, "r") as f:
             logging.info(
-                "За всё время израсходовано:", json.load(f)["tokens_count"], "токенов"
+                f"За всё время израсходовано: {json.load(f)['tokens_count']} токенов"
             )
     
-    def asking_gpt(self, user_id: int, task: str | None = None) -> str:
+    def asking_gpt(self, user_id: int, task: str | None = None, mode: int = 0) -> str:
         try:
             message = json.loads(self.db(user_id)["gpt_chat"])
         except Exception as e:
             message = []
         if task:
             message.append({"role": "user", "content": task})
-        answer = self.ask_gpt(message)
+        answer = self.ask_gpt(message, 250 if mode == 1 else None)
         message.append({"role": "assistant", "content": answer})
         current_tokens_used = self.count_tokens_in_dialogue(message)
         self.dbc.update_value(user_id, "gpt_limit", self.db(user_id)["gpt_limit"]-current_tokens_used)
