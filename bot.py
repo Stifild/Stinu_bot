@@ -56,10 +56,13 @@ def help(message):
 
 @bot.message_handler(commands=["tts"])
 def tts(message: telebot.types.Message):
+    bot.send_chat_action(message.chat.id, "record_voice")
     result: bool | tuple[bool, str] = sk.tts(message)
-    if result is bool:
+    if result is not bool:
         bot.send_message(message.chat.id, "Лови результат:")
+
         with open(f"./data/temp/{str(message.from_user.id)}.ogg", "rb") as file:
+            bot.send_chat_action(message.chat.id, "upload_voice")
             bot.send_audio(
                 message.chat.id,
                 file,
